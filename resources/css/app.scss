@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        background: #f4f5f7;
+        font-family: 'Inter', sans-serif;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        line-height: 1;
+    }
+
+    .icon-fill {
+        font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .dashboard-card {
+        box-shadow: 0 2px 4px rgba(9, 30, 66, 0.08);
+        transition: box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .dashboard-card:hover {
+        box-shadow: 0 10px 24px rgba(9, 30, 66, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .topbar-page-title h1,
+    .topbar-page-title h2,
+    .topbar-page-title h3 {
+        color: #091c35;
+        font-size: 1.125rem;
+        font-weight: 800;
+        line-height: 1.5rem;
+    }
+}
