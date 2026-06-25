@@ -14,6 +14,19 @@
 }
 
 @layer components {
+    .app-main {
+        flex: 1 1 0%;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    @media (min-width: 1024px) {
+        .app-main {
+            margin-left: 16rem; /* 256px = w-64 */
+        }
+    }
+
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         line-height: 1;

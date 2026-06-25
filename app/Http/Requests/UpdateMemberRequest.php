@@ -24,32 +24,18 @@ class UpdateMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['required', 'string', 'max:255'],
             'member_number' => [
                 'required',
                 'string',
                 'max:50',
                 Rule::unique('members', 'member_number')->ignore($this->route('member')),
             ],
-            'nik' => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('members', 'nik')->ignore($this->route('member')),
-            ],
-            'name' => ['required', 'string', 'max:255'],
-            'gender' => ['required', Rule::in(['male', 'female'])],
-            'birth_place' => ['nullable', 'string', 'max:255'],
-            'birth_date' => ['nullable', 'date', 'before:today'],
+            'work_unit' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('members', 'email')->ignore($this->route('member')),
-            ],
-            'address' => ['nullable', 'string', 'max:1000'],
             'joined_at' => ['required', 'date'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'employment_status' => ['required', 'string', 'max:255'],
         ];
     }
 }

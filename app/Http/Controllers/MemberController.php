@@ -22,7 +22,7 @@ class MemberController extends Controller
      */
     public function index(Request $request): View
     {
-        $members = $this->members->paginate($request->only(['search', 'status']));
+        $members = $this->members->paginate($request->only(['search', 'status', 'employment_status']));
 
         return view('members.index', compact('members'));
     }
@@ -57,7 +57,57 @@ class MemberController extends Controller
      */
     public function show(Member $member): View
     {
-        return view('members.show', compact('member'));
+        $member->load(['savings.savingsType', 'loans.installments']);
+
+        $savingsBalance = (float) $member->savings()
+            ->selectRaw("SUM(CASE WHEN transaction_type = 'deposit' THEN amount ELSE -amount END) as balance")
+            ->value('balance');
+
+        $savingsByType = $member->savings()
+            ->selectRaw('savings_type_id, SUM(CASE WHEN transaction_type = \'deposit\' THEN amount ELSE -amount END) as balance, COUNT(*) as total_tx')
+            ->groupBy('savings_type_id')
+            ->with('savingsType')
+            ->get();
+
+        $recentSavings = $member->savings()
+            ->with('savingsType')
+            ->latest('transaction_date')
+            ->limit(10)
+            ->get();
+
+        $loans = $member->loans()
+            ->with(['installments' => fn ($q) => $q->orderBy('installment_number')])
+            ->latest('disbursed_at')
+            ->get();
+
+        $activeLoansCount = $loans->where('status', 'active')->count();
+        $totalOutstanding = (float) $loans->where('status', 'active')->sum('remaining_balance');
+
+        $installments = $member->loans()
+            ->with('installments')
+            ->get()
+            ->pluck('installments')
+            ->flatten()
+            ->sortBy('due_date')
+            ->values();
+
+        $dueInstallmentsCount = $installments->whereIn('status', ['pending', 'partial'])->count();
+        $overdueInstallmentsCount = $installments->where('status', 'late')->count();
+        $paidInstallmentsCount = $installments->where('status', 'paid')->count();
+
+        return view('members.show', compact(
+            'member',
+            'savingsBalance',
+            'savingsByType',
+            'recentSavings',
+            'loans',
+            'activeLoansCount',
+            'totalOutstanding',
+            'installments',
+            'dueInstallmentsCount',
+            'overdueInstallmentsCount',
+            'paidInstallmentsCount',
+        ));
     }
 
     /**

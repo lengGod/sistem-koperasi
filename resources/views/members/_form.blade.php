@@ -5,65 +5,28 @@
 @endphp
 
 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-    <div>
-        <label for="member_number" class="mb-2 block text-sm font-bold text-on-surface">Nomor Anggota</label>
-        <input id="member_number" name="member_number" value="{{ old('member_number', $member->member_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-        @error('member_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label for="nik" class="mb-2 block text-sm font-bold text-on-surface">NIK</label>
-        <input id="nik" name="nik" value="{{ old('nik', $member->nik) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-        @error('nik') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
     <div class="md:col-span-2">
-        <label for="name" class="mb-2 block text-sm font-bold text-on-surface">Nama Lengkap</label>
+        <label for="name" class="mb-2 block text-sm font-bold text-on-surface">Nama</label>
         <input id="name" name="name" value="{{ old('name', $member->name) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('name') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label for="gender" class="mb-2 block text-sm font-bold text-on-surface">Jenis Kelamin</label>
-        <select id="gender" name="gender" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-            <option value="">Pilih jenis kelamin</option>
-            <option value="male" @selected(old('gender', $member->gender) === 'male')>Laki-laki</option>
-            <option value="female" @selected(old('gender', $member->gender) === 'female')>Perempuan</option>
-        </select>
-        @error('gender') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+        <label for="member_number" class="mb-2 block text-sm font-bold text-on-surface">No Rekening</label>
+        <input id="member_number" name="member_number" value="{{ old('member_number', $member->member_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        @error('member_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status</label>
-        <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-            <option value="active" @selected(old('status', $member->status) === 'active')>Aktif</option>
-            <option value="inactive" @selected(old('status', $member->status) === 'inactive')>Tidak Aktif</option>
-        </select>
-        @error('status') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+        <label for="work_unit" class="mb-2 block text-sm font-bold text-on-surface">Unit Kerja</label>
+        <input id="work_unit" name="work_unit" value="{{ old('work_unit', $member->work_unit) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        @error('work_unit') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label for="birth_place" class="mb-2 block text-sm font-bold text-on-surface">Tempat Lahir</label>
-        <input id="birth_place" name="birth_place" value="{{ old('birth_place', $member->birth_place) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
-        @error('birth_place') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label for="birth_date" class="mb-2 block text-sm font-bold text-on-surface">Tanggal Lahir</label>
-        <input id="birth_date" name="birth_date" type="date" value="{{ old('birth_date', optional($member->birth_date)->format('Y-m-d')) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
-        @error('birth_date') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label for="phone" class="mb-2 block text-sm font-bold text-on-surface">No. Telepon</label>
+        <label for="phone" class="mb-2 block text-sm font-bold text-on-surface">No Telp</label>
         <input id="phone" name="phone" value="{{ old('phone', $member->phone) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
         @error('phone') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label for="email" class="mb-2 block text-sm font-bold text-on-surface">Email</label>
-        <input id="email" name="email" type="email" value="{{ old('email', $member->email) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
-        @error('email') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
@@ -72,10 +35,19 @@
         @error('joined_at') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
-    <div class="md:col-span-2">
-        <label for="address" class="mb-2 block text-sm font-bold text-on-surface">Alamat</label>
-        <textarea id="address" name="address" rows="4" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">{{ old('address', $member->address) }}</textarea>
-        @error('address') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+    <div>
+        <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status Keanggotaan</label>
+        <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+            <option value="active" @selected(old('status', $member->status) === 'active')>Aktif</option>
+            <option value="inactive" @selected(old('status', $member->status) === 'inactive')>Tidak Aktif</option>
+        </select>
+        @error('status') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label for="employment_status" class="mb-2 block text-sm font-bold text-on-surface">Status Pekerja</label>
+        <input id="employment_status" name="employment_status" value="{{ old('employment_status', $member->employment_status) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        @error('employment_status') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 </div>
 

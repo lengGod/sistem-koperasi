@@ -15,11 +15,13 @@ class EloquentMemberRepository implements MemberRepositoryInterface
                 $query->where(function ($query) use ($search): void {
                     $query->where('name', 'like', "%{$search}%")
                         ->orWhere('member_number', 'like', "%{$search}%")
-                        ->orWhere('nik', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('work_unit', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('employment_status', 'like', "%{$search}%");
                 });
             })
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->when($filters['employment_status'] ?? null, fn ($query, string $status) => $query->where('employment_status', $status))
             ->latest('joined_at')
             ->latest()
             ->paginate($perPage)

@@ -17,19 +17,24 @@
     </section>
 
     <form method="GET" action="{{ route('members.index') }}" class="dashboard-card mb-6 rounded-3xl bg-surface-container-lowest p-5">
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div class="md:col-span-2">
                 <label for="search" class="mb-2 block text-sm font-bold text-on-surface">Cari</label>
-                <input id="search" name="search" value="{{ request('search') }}" placeholder="Nomor anggota, NIK, nama, atau telepon" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+                <input id="search" name="search" value="{{ request('search') }}" placeholder="Nama, no rekening, unit kerja, no telp, atau status pekerja" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
 
             <div>
-                <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status</label>
+                <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status Keanggotaan</label>
                 <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
                     <option value="">Semua</option>
                     <option value="active" @selected(request('status') === 'active')>Aktif</option>
                     <option value="inactive" @selected(request('status') === 'inactive')>Tidak Aktif</option>
                 </select>
+            </div>
+
+            <div>
+                <label for="employment_status" class="mb-2 block text-sm font-bold text-on-surface">Status Pekerja</label>
+                <input id="employment_status" name="employment_status" value="{{ request('employment_status') }}" placeholder="Semua status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
         </div>
 
@@ -49,7 +54,20 @@
     @endphp
 
     <form
-        x-data="{ selected: [], memberIds: @js($memberIds) }"
+        x-data="{
+            selected: [],
+            memberIds: @js($memberIds),
+            allSelected() { return this.memberIds.length > 0 && this.selected.length === this.memberIds.length; },
+            toggleAll(checked) { this.selected = checked ? this.memberIds.slice() : []; },
+            toggleOne(id, checked) {
+                const stringId = String(id);
+                if (checked) {
+                    if (!this.selected.includes(stringId)) this.selected.push(stringId);
+                } else {
+                    this.selected = this.selected.filter((value) => value !== stringId);
+                }
+            },
+        }"
         method="POST"
         action="{{ route('members.bulk-destroy') }}"
         data-confirm="Anda akan menghapus anggota yang dipilih."
@@ -68,7 +86,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low" @click="selected = selected.length === memberIds.length ? [] : memberIds.slice()">
+                <button type="button" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low" @click="toggleAll(!allSelected())">
                     Pilih Semua
                 </button>
                 <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-error-container px-4 py-2 text-sm font-bold text-on-error-container transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50" :disabled="selected.length === 0">
@@ -83,14 +101,16 @@
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" @change="selected = $event.target.checked ? memberIds.slice() : []" :checked="selected.length === memberIds.length && memberIds.length > 0">
+                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
                         </th>
                         <th class="px-6 py-4">No</th>
-                        <th class="px-6 py-4">Nomor Anggota</th>
+                        <th class="px-6 py-4">No Rekening</th>
                         <th class="px-6 py-4">Nama</th>
-                        <th class="px-6 py-4">NIK</th>
-                        <th class="px-6 py-4">Kontak</th>
-                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4">Unit Kerja</th>
+                        <th class="px-6 py-4">No Telp</th>
+                        <th class="px-6 py-4">Tanggal Bergabung</th>
+                        <th class="px-6 py-4">Status Keanggotaan</th>
+                        <th class="px-6 py-4">Status Pekerja</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -98,24 +118,20 @@
                     @forelse ($members as $member)
                         <tr class="transition hover:bg-surface-container">
                             <td class="px-6 py-4">
-                                <input type="checkbox" name="member_ids[]" value="{{ $member->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" x-model="selected">
+                                <input type="checkbox" name="member_ids[]" value="{{ $member->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="selected.includes(String({{ $member->id }}))" @change="toggleOne({{ $member->id }}, $event.target.checked)">
                             </td>
                             <td class="px-6 py-4 text-on-surface-variant">{{ $loop->iteration + ($members->currentPage() - 1) * $members->perPage() }}</td>
                             <td class="px-6 py-4 font-bold text-on-surface">{{ $member->member_number }}</td>
-                            <td class="px-6 py-4">
-                                <div class="font-bold text-on-surface">{{ $member->name }}</div>
-                                <div class="text-xs text-outline">{{ $member->gender === 'male' ? 'Laki-laki' : 'Perempuan' }}</div>
-                            </td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ $member->nik }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">
-                                <div>{{ $member->phone ?: '-' }}</div>
-                                <div class="text-xs text-outline">{{ $member->email ?: '-' }}</div>
-                            </td>
+                            <td class="px-6 py-4 font-bold text-on-surface">{{ $member->name }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $member->work_unit ?: '-' }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $member->phone ?: '-' }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ optional($member->joined_at)->format('d M Y') }}</td>
                             <td class="px-6 py-4">
                                 <span class="{{ $member->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-error-container text-on-error-container' }} rounded-full px-2.5 py-1 text-xs font-extrabold">
                                     {{ $member->status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
                                 </span>
                             </td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $member->employment_status ?: '-' }}</td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('members.show', $member) }}" class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">

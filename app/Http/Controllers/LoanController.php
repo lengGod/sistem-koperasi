@@ -16,9 +16,9 @@ class LoanController extends Controller
     {
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $loans = $this->loans->paginate();
+        $loans = $this->loans->paginate($request->only(['search', 'status']));
 
         return view('loans.index', compact('loans'));
     }
@@ -26,13 +26,23 @@ class LoanController extends Controller
     public function create(): View
     {
         return view('loans.create', [
-            'loan' => new Loan(['term_months' => 12, 'status' => 'draft']),
+            'loan' => new Loan([
+                'loan_number' => $this->generateLoanNumber(),
+                'term_months' => 12,
+                'disbursed_at' => now()->toDateString(),
+                'status' => 'active',
+            ]),
             'members' => Member::query()->orderBy('name')->get(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $request->merge([
+            'loan_number' => $request->filled('loan_number') ? $request->loan_number : $this->generateLoanNumber(),
+            'status' => $request->filled('status') ? $request->status : 'active',
+        ]);
+
         $data = $request->validate([
             'member_id' => ['required', 'exists:members,id'],
             'loan_number' => ['required', 'string', 'max:50', 'unique:loans,loan_number'],
@@ -110,5 +120,14 @@ class LoanController extends Controller
             ->with('status', $deleted > 1
                 ? "{$deleted} pinjaman berhasil dihapus."
                 : 'Pinjaman berhasil dihapus.');
+    }
+
+    private function generateLoanNumber(): string
+    {
+        do {
+            $loanNumber = 'LN-'.now()->format('YmdHis').'-'.random_int(100, 999);
+        } while (Loan::where('loan_number', $loanNumber)->exists());
+
+        return $loanNumber;
     }
 }

@@ -22,6 +22,7 @@ class MemberFactory extends Factory
             'nik' => $this->faker->unique()->numerify('################'),
             'name' => $this->faker->name(),
             'gender' => $this->faker->randomElement(['male', 'female']),
+            'work_unit' => $this->faker->randomElement(['Keuangan', 'Operasional', 'Produksi', 'Administrasi']),
             'birth_place' => $this->faker->city(),
             'birth_date' => $this->faker->dateTimeBetween('-60 years', '-18 years')->format('Y-m-d'),
             'phone' => $this->faker->phoneNumber(),
@@ -29,6 +30,7 @@ class MemberFactory extends Factory
             'address' => $this->faker->address(),
             'joined_at' => $this->faker->dateTimeBetween('-5 years', 'now')->format('Y-m-d'),
             'status' => $this->faker->randomElement(['active', 'inactive']),
+            'employment_status' => $this->faker->randomElement(['Tetap', 'Kontrak', 'Honorer', 'Outsourcing']),
         ];
     }
 }

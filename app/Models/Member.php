@@ -15,6 +15,7 @@ class Member extends Model
         'nik',
         'name',
         'gender',
+        'work_unit',
         'birth_place',
         'birth_date',
         'phone',
@@ -22,6 +23,7 @@ class Member extends Model
         'address',
         'joined_at',
         'status',
+        'employment_status',
     ];
 
     protected function casts(): array
@@ -30,5 +32,15 @@ class Member extends Model
             'birth_date' => 'date',
             'joined_at' => 'date',
         ];
+    }
+
+    public function savings()
+    {
+        return $this->hasMany(Savings::class);
+    }
+
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
     }
 }

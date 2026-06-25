@@ -21,7 +21,20 @@
     @endphp
 
     <form
-        x-data="{ selected: [], savingsTypeIds: @js($savingsTypeIds) }"
+        x-data="{
+            selected: [],
+            savingsTypeIds: @js($savingsTypeIds),
+            allSelected() { return this.savingsTypeIds.length > 0 && this.selected.length === this.savingsTypeIds.length; },
+            toggleAll(checked) { this.selected = checked ? this.savingsTypeIds.slice() : []; },
+            toggleOne(id, checked) {
+                const stringId = String(id);
+                if (checked) {
+                    if (!this.selected.includes(stringId)) this.selected.push(stringId);
+                } else {
+                    this.selected = this.selected.filter((value) => value !== stringId);
+                }
+            },
+        }"
         method="POST"
         action="{{ route('savings-types.bulk-destroy') }}"
         data-confirm="Anda akan menghapus jenis simpanan yang dipilih."
@@ -40,7 +53,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low" @click="selected = selected.length === savingsTypeIds.length ? [] : savingsTypeIds.slice()">
+                <button type="button" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low" @click="toggleAll(!allSelected())">
                     Pilih Semua
                 </button>
                 <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-error-container px-4 py-2 text-sm font-bold text-on-error-container transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50" :disabled="selected.length === 0">
@@ -55,7 +68,7 @@
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" @change="selected = $event.target.checked ? savingsTypeIds.slice() : []" :checked="selected.length === savingsTypeIds.length && savingsTypeIds.length > 0">
+                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
                         </th>
                         <th class="px-6 py-4">Kode</th>
                         <th class="px-6 py-4">Nama</th>
@@ -68,7 +81,7 @@
                     @forelse ($savingsTypes as $savingsType)
                         <tr class="transition hover:bg-surface-container">
                             <td class="px-6 py-4">
-                                <input type="checkbox" name="savings_type_ids[]" value="{{ $savingsType->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" x-model="selected">
+                                <input type="checkbox" name="savings_type_ids[]" value="{{ $savingsType->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="selected.includes(String({{ $savingsType->id }}))" @change="toggleOne({{ $savingsType->id }}, $event.target.checked)">
                             </td>
                             <td class="px-6 py-4 font-bold text-on-surface">{{ $savingsType->code }}</td>
                             <td class="px-6 py-4">

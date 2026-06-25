@@ -16,7 +16,7 @@
                 Tambah Anggota
             </a>
             <a href="{{ route('savings.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
-                <span class="material-symbols-outlined icon-fill text-[20px]">account_balance_wallet</span>
+                <span class="material-symbols-outlined icon-fill text-[20px]">account_balance</span>
                 Catat Simpanan
             </a>
         </div>
@@ -25,7 +25,7 @@
     <section class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         @foreach ([
             ['label' => 'Total Anggota', 'value' => number_format($totalMembers), 'icon' => 'group', 'tone' => 'bg-primary-fixed text-primary', 'note' => 'Anggota terdaftar'],
-            ['label' => 'Total Simpanan', 'value' => 'Rp '.number_format($totalSavings, 0, ',', '.'), 'icon' => 'account_balance_wallet', 'tone' => 'bg-secondary-fixed text-secondary', 'note' => 'Akumulasi seluruh transaksi'],
+            ['label' => 'Total Simpanan', 'value' => 'Rp '.number_format($totalSavings, 0, ',', '.'), 'icon' => 'account_balance', 'tone' => 'bg-secondary-fixed text-secondary', 'note' => 'Akumulasi seluruh transaksi'],
             ['label' => 'Pinjaman Aktif', 'value' => number_format($activeLoans), 'icon' => 'payments', 'tone' => 'bg-tertiary-fixed text-tertiary', 'note' => 'Pinjaman berjalan'],
             ['label' => 'Angsuran Perlu Proses', 'value' => number_format($dueInstallments), 'icon' => 'event_repeat', 'tone' => 'bg-surface-container-high text-on-surface', 'note' => 'Pending, partial, late'],
         ] as $card)
@@ -47,7 +47,7 @@
         <article class="dashboard-card rounded-3xl bg-surface-container-lowest p-6">
             <div class="mb-4 flex items-start justify-between">
                 <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary-fixed text-secondary">
-                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <span class="material-symbols-outlined">account_balance</span>
                 </div>
                 <span class="rounded-full bg-surface-container-low px-2.5 py-1 text-[11px] font-extrabold text-on-surface-variant">Bulan ini</span>
             </div>
@@ -59,7 +59,7 @@
         <article class="dashboard-card rounded-3xl bg-surface-container-lowest p-6">
             <div class="mb-4 flex items-start justify-between">
                 <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-fixed text-primary">
-                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <span class="material-symbols-outlined">account_balance</span>
                 </div>
                 <span class="rounded-full bg-surface-container-low px-2.5 py-1 text-[11px] font-extrabold text-on-surface-variant">Saldo berjalan</span>
             </div>
@@ -135,7 +135,7 @@
                 @forelse ($recentSavings as $saving)
                     <div class="flex gap-4">
                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                            <span class="material-symbols-outlined text-[20px]">savings</span>
+                            <span class="material-symbols-outlined text-[20px]">account_balance</span>
                         </div>
                         <div class="min-w-0">
                             <p class="text-sm leading-5 text-on-surface">

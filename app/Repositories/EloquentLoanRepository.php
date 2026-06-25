@@ -11,6 +11,16 @@ class EloquentLoanRepository implements LoanRepositoryInterface
     {
         return Loan::query()
             ->with('member')
+            ->when($filters['search'] ?? null, function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('loan_number', 'like', "%{$search}%")
+                        ->orWhereHas('member', function ($query) use ($search): void {
+                            $query->where('name', 'like', "%{$search}%")
+                                ->orWhere('member_number', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
             ->latest('disbursed_at')
             ->latest()
             ->paginate($perPage)

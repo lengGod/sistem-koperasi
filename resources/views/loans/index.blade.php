@@ -21,15 +21,17 @@
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div class="md:col-span-2">
                 <label for="search" class="mb-2 block text-sm font-bold text-on-surface">Cari</label>
-                <input id="search" name="search" value="{{ request('search') }}" placeholder="Nomor pinjaman atau nama anggota" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+                <input id="search" name="search" value="{{ request('search') }}" placeholder="Nama atau no rekening" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
             <div>
                 <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status</label>
                 <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
                     <option value="">Semua</option>
-                    <option value="pending" @selected(request('status') === 'pending')>Pending</option>
+                    <option value="draft" @selected(request('status') === 'draft')>Draf</option>
                     <option value="active" @selected(request('status') === 'active')>Aktif</option>
-                    <option value="paid" @selected(request('status') === 'paid')>Lunas</option>
+                    <option value="completed" @selected(request('status') === 'completed')>Lunas</option>
+                    <option value="overdue" @selected(request('status') === 'overdue')>Terlambat</option>
+                    <option value="cancelled" @selected(request('status') === 'cancelled')>Dibatalkan</option>
                 </select>
             </div>
         </div>
@@ -47,7 +49,20 @@
     @endphp
 
     <form
-        x-data="{ selected: [], loanIds: @js($loanIds) }"
+        x-data="{
+            selected: [],
+            loanIds: @js($loanIds),
+            allSelected() { return this.loanIds.length > 0 && this.selected.length === this.loanIds.length; },
+            toggleAll(checked) { this.selected = checked ? this.loanIds.slice() : []; },
+            toggleOne(id, checked) {
+                const stringId = String(id);
+                if (checked) {
+                    if (!this.selected.includes(stringId)) this.selected.push(stringId);
+                } else {
+                    this.selected = this.selected.filter((value) => value !== stringId);
+                }
+            },
+        }"
         method="POST"
         action="{{ route('loans.bulk-destroy') }}"
         data-confirm="Anda akan menghapus data pinjaman yang dipilih."
@@ -66,7 +81,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low" @click="selected = selected.length === loanIds.length ? [] : loanIds.slice()">
+                <button type="button" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low" @click="toggleAll(!allSelected())">
                     Pilih Semua
                 </button>
                 <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-error-container px-4 py-2 text-sm font-bold text-on-error-container transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50" :disabled="selected.length === 0">
@@ -77,18 +92,21 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[1100px] text-left text-sm">
+            <table class="w-full min-w-[1500px] text-left text-sm">
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" @change="selected = $event.target.checked ? loanIds.slice() : []" :checked="selected.length === loanIds.length && loanIds.length > 0">
+                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
                         </th>
-                        <th class="px-6 py-4">Nomor</th>
-                        <th class="px-6 py-4">Anggota</th>
-                        <th class="px-6 py-4">Pokok</th>
-                        <th class="px-6 py-4">Angsuran</th>
-                        <th class="px-6 py-4">Saldo</th>
-                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4">Nama</th>
+                        <th class="px-6 py-4">No Rekening</th>
+                        <th class="px-6 py-4">Plafond Pinjaman</th>
+                        <th class="px-6 py-4">Jangka Waktu</th>
+                        <th class="px-6 py-4">Tanggal Realisasi</th>
+                        <th class="px-6 py-4">Tanggal Jatuh Tempo</th>
+                        <th class="px-6 py-4">Angsuran Pokok</th>
+                        <th class="px-6 py-4">Bunga</th>
+                        <th class="px-6 py-4">Sisa Pinjaman</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -96,35 +114,17 @@
                     @forelse ($loans as $loan)
                         <tr class="transition hover:bg-surface-container">
                             <td class="px-6 py-4">
-                                <input type="checkbox" name="loan_ids[]" value="{{ $loan->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" x-model="selected">
+                                <input type="checkbox" name="loan_ids[]" value="{{ $loan->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="selected.includes(String({{ $loan->id }}))" @change="toggleOne({{ $loan->id }}, $event.target.checked)">
                             </td>
-                            <td class="px-6 py-4 font-bold text-on-surface">{{ $loan->loan_number }}</td>
-                            <td class="px-6 py-4">{{ $loan->member?->name ?? '-' }}</td>
+                            <td class="px-6 py-4 font-bold text-on-surface">{{ $loan->member?->name ?? '-' }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $loan->member?->member_number ?? '-' }}</td>
                             <td class="px-6 py-4 font-bold text-on-surface">Rp {{ number_format((float) $loan->principal_amount, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $loan->term_months }} bulan</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ optional($loan->disbursed_at)->format('d M Y') ?: '-' }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ optional($loan->due_date)->format('d M Y') ?: '-' }}</td>
                             <td class="px-6 py-4 text-on-surface-variant">Rp {{ number_format((float) $loan->monthly_installment, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $loan->interest_rate }}%</td>
                             <td class="px-6 py-4 text-on-surface-variant">Rp {{ number_format((float) $loan->remaining_balance, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4">
-                                @php
-                                    $loanStatusLabel = match($loan->status) {
-                                        'draft'     => 'Draf',
-                                        'active'    => 'Aktif',
-                                        'completed' => 'Lunas',
-                                        'overdue'   => 'Terlambat',
-                                        'cancelled' => 'Dibatalkan',
-                                        default     => ucfirst($loan->status),
-                                    };
-                                    $loanStatusClass = match($loan->status) {
-                                        'completed' => 'bg-emerald-100 text-emerald-800',
-                                        'active'    => 'bg-blue-100 text-blue-800',
-                                        'overdue'   => 'bg-red-100 text-red-800',
-                                        'cancelled' => 'bg-gray-100 text-gray-600',
-                                        default     => 'bg-yellow-100 text-yellow-800',
-                                    };
-                                @endphp
-                                <span class="rounded-full px-2.5 py-1 text-xs font-extrabold {{ $loanStatusClass }}">
-                                    {{ $loanStatusLabel }}
-                                </span>
-                            </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('loans.show', $loan) }}" class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">Detail</a>
@@ -133,7 +133,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="px-6 py-10 text-center text-sm text-outline">Belum ada data pinjaman.</td></tr>
+                        <tr><td colspan="11" class="px-6 py-10 text-center text-sm text-outline">Belum ada data pinjaman.</td></tr>
                     @endforelse
                 </tbody>
             </table>
