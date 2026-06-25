@@ -16,6 +16,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/favicon.ico', function () {
+    $path = public_path('favicon.ico');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path, [
+        'Content-Type' => 'image/x-icon',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+});
+
 Route::get('/dashboard', function () {
     $totalMembers = Member::count();
     $totalSavings = Savings::sum('amount');

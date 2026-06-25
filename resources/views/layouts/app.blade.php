@@ -4,8 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="icon" href="{{ asset('favicon.ico') }}?v=2" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=2" type="image/x-icon">
     <title>{{ isset($title) ? $title . ' | ' : '' }}Koperasi Siger - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap"
+        rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
@@ -66,11 +69,8 @@
         <!-- Sidebar (off-canvas on mobile, fixed on desktop so it never scrolls and never overlaps content) -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-outline-variant bg-surface-container-lowest shadow-sm transition-transform duration-300 lg:translate-x-0">
-            <div class="flex items-center gap-4 px-6 py-6">
-                <div
-                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-container text-on-primary shadow-sm">
-                    <span class="material-symbols-outlined icon-fill">account_balance</span>
-                </div>
+            <div class="flex items-center gap-3 px-6 py-6">
+                <img src="{{ asset('logo.png') }}" alt="Logo Koperasi" class="h-12 w-12 shrink-0 object-contain">
                 <div class="min-w-0 flex-1">
                     <h1 class="truncate text-lg font-extrabold text-primary">Koperasi Digital</h1>
                     <p class="text-xs font-semibold uppercase tracking-[0.14em] text-outline">Admin Portal</p>
@@ -159,8 +159,8 @@
                                 <span class="material-symbols-outlined text-[20px]">person</span>
                                 Profil
                             </a>
-                            <form action="{{ route('logout') }}" method="POST"
-                                class="border-t border-outline-variant" style="margin-top: 0.75rem;">
+                            <form action="{{ route('logout') }}" method="POST" class="border-t border-outline-variant"
+                                style="margin-top: 0.75rem;">
                                 @csrf
                                 <button type="submit"
                                     class="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-error transition hover:bg-error-container">
