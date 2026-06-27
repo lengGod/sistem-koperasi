@@ -16,13 +16,13 @@ class EloquentLoanRepository implements LoanRepositoryInterface
                     $query->where('loan_number', 'like', "%{$search}%")
                         ->orWhereHas('member', function ($query) use ($search): void {
                             $query->where('name', 'like', "%{$search}%")
-                                ->orWhere('member_number', 'like', "%{$search}%");
+                                ->orWhere('member_number', 'like', "%{$search}%")
+                                ->orWhere('account_number', 'like', "%{$search}%");
                         });
                 });
             })
-            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->latest('disbursed_at')
-            ->latest()
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('loans.status', $status))
+            ->when(($filters['sort'] ?? null) === 'member_name', fn ($query) => $query->join('members', 'loans.member_id', '=', 'members.id')->orderBy('members.name')->select('loans.*')->orderBy('loans.loan_number'), fn ($query) => $query->join('members', 'loans.member_id', '=', 'members.id')->orderBy('members.name')->orderBy('loans.loan_number')->select('loans.*'))
             ->paginate($perPage)
             ->withQueryString();
     }

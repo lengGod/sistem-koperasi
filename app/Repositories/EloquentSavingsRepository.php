@@ -11,8 +11,18 @@ class EloquentSavingsRepository implements SavingsRepositoryInterface
     {
         return Savings::query()
             ->with(['member', 'savingsType'])
-            ->latest('transaction_date')
-            ->latest()
+            ->when($filters['search'] ?? null, function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('reference_number', 'like', "%{$search}%")
+                        ->orWhereHas('member', function ($query) use ($search): void {
+                            $query->where('name', 'like', "%{$search}%")
+                                ->orWhere('member_number', 'like', "%{$search}%")
+                                ->orWhere('account_number', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($filters['type'] ?? null, fn ($query, string $type) => $query->where('transaction_type', $type))
+            ->when(($filters['sort'] ?? null) === 'member_name', fn ($query) => $query->join('members', 'savings.member_id', '=', 'members.id')->orderBy('members.name')->orderBy('savings.transaction_date')->select('savings.*'), fn ($query) => $query->join('members', 'savings.member_id', '=', 'members.id')->orderBy('members.name')->orderBy('savings.transaction_date')->select('savings.*'))
             ->paginate($perPage)
             ->withQueryString();
     }

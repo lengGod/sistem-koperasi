@@ -19,7 +19,7 @@ class SavingsController extends Controller
 
     public function index(): View
     {
-        $savings = $this->savings->paginate();
+        $savings = $this->savings->paginate(request()->only(['search', 'type', 'sort']));
 
         return view('savings.index', compact('savings'));
     }

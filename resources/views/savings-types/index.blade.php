@@ -25,7 +25,7 @@
             selected: [],
             savingsTypeIds: @js($savingsTypeIds),
             allSelected() { return this.savingsTypeIds.length > 0 && this.selected.length === this.savingsTypeIds.length; },
-            toggleAll(checked) { this.selected = checked ? this.savingsTypeIds.slice() : []; },
+            toggleAll(checked) { this.selected = checked ? this.savingsTypeIds.map(String) : []; },
             toggleOne(id, checked) {
                 const stringId = String(id);
                 if (checked) {
@@ -68,7 +68,7 @@
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
+                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" @click="toggleAll(!allSelected())" :checked="allSelected()">
                         </th>
                         <th class="px-6 py-4">Kode</th>
                         <th class="px-6 py-4">Nama</th>

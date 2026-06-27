@@ -53,7 +53,7 @@
             selected: [],
             loanIds: @js($loanIds),
             allSelected() { return this.loanIds.length > 0 && this.selected.length === this.loanIds.length; },
-            toggleAll(checked) { this.selected = checked ? this.loanIds.slice() : []; },
+            toggleAll(checked) { this.selected = checked ? this.loanIds.map(String) : []; },
             toggleOne(id, checked) {
                 const stringId = String(id);
                 if (checked) {
@@ -92,21 +92,31 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[1500px] text-left text-sm">
+            <table class="w-full min-w-[1100px] text-left text-sm">
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
+                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" @click="toggleAll(!allSelected())" :checked="allSelected()">
                         </th>
-                        <th class="px-6 py-4">Nama</th>
-                        <th class="px-6 py-4">No Rekening</th>
-                        <th class="px-6 py-4">Plafond Pinjaman</th>
-                        <th class="px-6 py-4">Jangka Waktu</th>
-                        <th class="px-6 py-4">Tanggal Realisasi</th>
-                        <th class="px-6 py-4">Tanggal Jatuh Tempo</th>
-                        <th class="px-6 py-4">Angsuran Pokok</th>
-                        <th class="px-6 py-4">Bunga</th>
+                        @php
+                            $isMemberNameSort = request('sort') === 'member_name';
+                            $memberSortParams = request()->except('sort');
+                            if (! $isMemberNameSort) {
+                                $memberSortParams['sort'] = 'member_name';
+                            }
+                        @endphp
+                        <th class="px-6 py-4">
+                            <a href="{{ route('loans.index', $memberSortParams) }}" class="inline-flex items-center gap-1 transition hover:text-primary">
+                                Nama
+                                @if ($isMemberNameSort)
+                                    <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                                @endif
+                            </a>
+                        </th>
+                        <th class="px-6 py-4">No Pinjaman</th>
+                        <th class="px-6 py-4">Plafond</th>
                         <th class="px-6 py-4">Sisa Pinjaman</th>
+                        <th class="px-6 py-4">Status</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -117,14 +127,14 @@
                                 <input type="checkbox" name="loan_ids[]" value="{{ $loan->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="selected.includes(String({{ $loan->id }}))" @change="toggleOne({{ $loan->id }}, $event.target.checked)">
                             </td>
                             <td class="px-6 py-4 font-bold text-on-surface">{{ $loan->member?->name ?? '-' }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ $loan->member?->member_number ?? '-' }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $loan->loan_number }}</td>
                             <td class="px-6 py-4 font-bold text-on-surface">Rp {{ number_format((float) $loan->principal_amount, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ $loan->term_months }} bulan</td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ optional($loan->disbursed_at)->format('d M Y') ?: '-' }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ optional($loan->due_date)->format('d M Y') ?: '-' }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">Rp {{ number_format((float) $loan->monthly_installment, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ $loan->interest_rate }}%</td>
-                            <td class="px-6 py-4 text-on-surface-variant">Rp {{ number_format((float) $loan->remaining_balance, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 font-bold text-amber-700">Rp {{ number_format((float) $loan->remaining_balance, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">
+                                <span class="rounded-full px-2.5 py-1 text-xs font-extrabold bg-surface-container-high">
+                                    {{ $loan->status === 'active' ? 'Aktif' : 'Pasif' }}
+                                </span>
+                            </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('loans.show', $loan) }}" class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">Detail</a>
@@ -133,7 +143,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="11" class="px-6 py-10 text-center text-sm text-outline">Belum ada data pinjaman.</td></tr>
+                        <tr><td colspan="7" class="px-6 py-10 text-center text-sm text-outline">Belum ada data pinjaman.</td></tr>
                     @endforelse
                 </tbody>
             </table>

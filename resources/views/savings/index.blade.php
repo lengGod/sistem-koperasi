@@ -50,7 +50,7 @@
             selected: [],
             savingsIds: @js($savingsIds),
             allSelected() { return this.savingsIds.length > 0 && this.selected.length === this.savingsIds.length; },
-            toggleAll(checked) { this.selected = checked ? this.savingsIds.slice() : []; },
+            toggleAll(checked) { this.selected = checked ? this.savingsIds.map(String) : []; },
             toggleOne(id, checked) {
                 const stringId = String(id);
                 if (checked) {
@@ -93,10 +93,24 @@
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
+                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" @click="toggleAll(!allSelected())" :checked="allSelected()">
                         </th>
                         <th class="px-6 py-4">Referensi</th>
-                        <th class="px-6 py-4">Anggota</th>
+                        @php
+    $isMemberNameSort = request('sort') === 'member_name';
+    $memberSortParams = request()->except('sort');
+    if (! $isMemberNameSort) {
+        $memberSortParams['sort'] = 'member_name';
+    }
+@endphp
+<th class="px-6 py-4">
+    <a href="{{ route('savings.index', $memberSortParams) }}" class="inline-flex items-center gap-1 transition hover:text-primary">
+        Anggota
+        @if ($isMemberNameSort)
+            <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+        @endif
+    </a>
+</th>
                         <th class="px-6 py-4">Jenis</th>
                         <th class="px-6 py-4">Tipe</th>
                         <th class="px-6 py-4">Nominal</th>

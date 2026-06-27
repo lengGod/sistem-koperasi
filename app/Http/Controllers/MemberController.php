@@ -22,7 +22,7 @@ class MemberController extends Controller
      */
     public function index(Request $request): View
     {
-        $members = $this->members->paginate($request->only(['search', 'status', 'employment_status']));
+        $members = $this->members->paginate($request->only(['search', 'status', 'employment_status', 'sort']));
 
         return view('members.index', compact('members'));
     }

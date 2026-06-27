@@ -33,10 +33,8 @@ class DatabaseSeeder extends Seeder
             $user->assignRole('admin');
         }
 
-        $this->call(MemberSeeder::class);
         $this->call(SavingsTypeSeeder::class);
+        $this->call(KoperasiMemberSeeder::class);
         $this->call(SavingsSeeder::class);
-        $this->call(LoanSeeder::class);
-        $this->call(InstallmentSeeder::class);
     }
 }

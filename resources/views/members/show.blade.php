@@ -4,143 +4,197 @@
     </x-slot>
 
     <section class="w-full" x-data="{ tab: 'savings' }">
-        {{-- Header --}}
-        <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.16em] text-outline">Manajemen Anggota</p>
-                <h1 class="mt-1 text-3xl font-bold tracking-tight text-on-surface">{{ $member->name }}</h1>
-                <div class="mt-2 flex flex-wrap items-center gap-2">
-                    <span class="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
-                        No Rekening {{ $member->member_number }}
-                    </span>
-                    @include('members._status_badge', ['status' => $member->status])
+        {{-- Breadcrumb --}}
+        <nav class="mb-4 flex items-center gap-2 text-sm text-outline">
+            <a href="{{ route('members.index') }}" class="transition hover:text-primary">Anggota</a>
+            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            <span class="font-semibold text-on-surface">{{ $member->name }}</span>
+        </nav>
+
+        {{-- Hero Profil --}}
+        <div class="dashboard-card mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-primary-container via-primary-container to-secondary-container">
+            <div class="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between lg:p-8">
+                <div class="flex items-start gap-5">
+                    {{-- Avatar inisial --}}
+                    @php
+                        $initials = collect(explode(' ', $member->name))
+                            ->map(fn ($part) => mb_substr($part, 0, 1))
+                            ->take(2)
+                            ->implode('');
+                        $initials = mb_strtoupper($initials);
+                    @endphp
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-surface text-2xl font-extrabold text-primary shadow-md">
+                        {{ $initials }}
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h1 class="text-2xl font-bold tracking-tight text-on-primary-container lg:text-3xl">
+                                {{ $member->name }}
+                            </h1>
+                            @include('members._status_badge', ['status' => $member->status])
+                        </div>
+                        <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-on-primary-container/80">
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px]">badge</span>
+                                {{ $member->account_number ?: 'Belum ada no rekening' }}
+                            </span>
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px]">apartment</span>
+                                {{ $member->work_unit ?: 'Unit kerja belum diisi' }}
+                            </span>
+                            @if ($member->joined_at)
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[16px]">event</span>
+                                    Bergabung {{ $member->joined_at->format('d M Y') }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('members.edit', $member) }}" class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
+                        <span class="material-symbols-outlined icon-fill text-[20px]">edit</span>
+                        Edit
+                    </a>
+                    <a href="{{ route('members.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
+                        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                        Kembali
+                    </a>
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('members.edit', $member) }}" class="inline-flex items-center gap-2 rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
-                    <span class="material-symbols-outlined icon-fill text-[20px]">edit</span>
-                    Edit
-                </a>
-                <a href="{{ route('members.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
-                    Kembali
-                </a>
+            {{-- Quick stats inline --}}
+            <div class="grid grid-cols-2 gap-px border-t border-outline-variant/40 bg-outline-variant/40 lg:grid-cols-4">
+                <div class="bg-surface-container-lowest px-6 py-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Total Simpanan</p>
+                    <p class="mt-1 text-xl font-bold tracking-tight text-on-surface">
+                        Rp {{ number_format($savingsBalance, 0, ',', '.') }}
+                    </p>
+                </div>
+                <div class="bg-surface-container-lowest px-6 py-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Pinjaman Aktif</p>
+                    <p class="mt-1 text-xl font-bold tracking-tight text-on-surface">
+                        {{ $activeLoansCount }}
+                        <span class="text-xs font-normal text-outline">/ {{ $loans->count() }} total</span>
+                    </p>
+                </div>
+                <div class="bg-surface-container-lowest px-6 py-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Sisa Pinjaman</p>
+                    <p class="mt-1 text-xl font-bold tracking-tight text-on-surface">
+                        Rp {{ number_format($totalOutstanding, 0, ',', '.') }}
+                    </p>
+                </div>
+                <div class="bg-surface-container-lowest px-6 py-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Angsuran Telat</p>
+                    <p class="mt-1 text-xl font-bold tracking-tight {{ $overdueInstallmentsCount > 0 ? 'text-error' : 'text-on-surface' }}">
+                        {{ $overdueInstallmentsCount }}
+                    </p>
+                </div>
             </div>
         </div>
 
-        {{-- Profil + Ringkasan --}}
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {{-- Kartu Identitas --}}
             <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-6 lg:col-span-2">
                 <div class="flex items-center gap-3 border-b border-outline-variant pb-4">
                     <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-container text-on-primary">
-                        <span class="material-symbols-outlined icon-fill">person</span>
+                        <span class="material-symbols-outlined icon-fill">id_card</span>
                     </div>
                     <div>
                         <h2 class="text-lg font-bold text-on-surface">Identitas Anggota</h2>
                         <p class="text-xs text-outline">Informasi personal dan data keanggotaan.</p>
                     </div>
                 </div>
-                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                <dl class="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">NIK</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">{{ $member->nik ?: '-' }}</p>
+                        <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">NIK</dt>
+                        <dd class="mt-1 text-sm font-semibold text-on-surface">{{ $member->nik ?: '-' }}</dd>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Jenis Kelamin</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">
+                        <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Jenis Kelamin</dt>
+                        <dd class="mt-1 text-sm font-semibold text-on-surface">
                             {{ $member->gender === 'L' ? 'Laki-laki' : ($member->gender === 'P' ? 'Perempuan' : '-') }}
-                        </p>
+                        </dd>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Tempat, Tanggal Lahir</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">
+                        <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Tempat, Tanggal Lahir</dt>
+                        <dd class="mt-1 text-sm font-semibold text-on-surface">
                             {{ $member->birth_place ?: '-' }}{{ $member->birth_date ? ', ' . $member->birth_date->format('d M Y') : '' }}
-                        </p>
+                        </dd>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Unit Kerja</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">{{ $member->work_unit ?: '-' }}</p>
+                        <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">No Telp</dt>
+                        <dd class="mt-1 text-sm font-semibold text-on-surface">{{ $member->phone ?: '-' }}</dd>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">No Telp</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">{{ $member->phone ?: '-' }}</p>
+                        <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Email</dt>
+                        <dd class="mt-1 break-all text-sm font-semibold text-on-surface">{{ $member->email ?: '-' }}</dd>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Email</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface break-all">{{ $member->email ?: '-' }}</p>
+                        <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Status Pekerja</dt>
+                        <dd class="mt-1 text-sm font-semibold text-on-surface">{{ $member->employment_status ?: '-' }}</dd>
                     </div>
                     <div class="sm:col-span-2">
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Alamat</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">{{ $member->address ?: '-' }}</p>
+                        <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Alamat</dt>
+                        <dd class="mt-1 text-sm font-semibold text-on-surface">{{ $member->address ?: '-' }}</dd>
                     </div>
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Tanggal Bergabung</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">{{ optional($member->joined_at)->format('d M Y') ?: '-' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Status Pekerja</p>
-                        <p class="mt-1 text-sm font-semibold text-on-surface">{{ $member->employment_status ?: '-' }}</p>
-                    </div>
-                </div>
+                </dl>
             </div>
 
-            {{-- Kartu Ringkasan (4 stat) --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-5">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                            <span class="material-symbols-outlined icon-fill">account_balance</span>
-                        </div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Total Simpanan</p>
-                    </div>
-                    <p class="mt-3 text-2xl font-bold tracking-tight text-on-surface">
-                        Rp {{ number_format($savingsBalance, 0, ',', '.') }}
-                    </p>
-                    <p class="mt-1 text-xs text-outline">{{ $member->savings->count() }} transaksi tercatat</p>
-                </div>
-
-                <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-5">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+            {{-- Kartu Ringkasan Pinjaman --}}
+            <div class="space-y-4">
+                <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-6">
+                    <div class="flex items-center gap-3 border-b border-outline-variant pb-4">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
                             <span class="material-symbols-outlined icon-fill">payments</span>
                         </div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Pinjaman Aktif</p>
+                        <div>
+                            <h2 class="text-lg font-bold text-on-surface">Pinjaman</h2>
+                            <p class="text-xs text-outline">Status dan sisa pinjaman.</p>
+                        </div>
                     </div>
-                    <p class="mt-3 text-2xl font-bold tracking-tight text-on-surface">
-                        {{ $activeLoansCount }}
-                    </p>
-                    <p class="mt-1 text-xs text-outline">
-                        Sisa: Rp {{ number_format($totalOutstanding, 0, ',', '.') }}
-                    </p>
+                    <div class="mt-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-outline">Aktif</span>
+                            <span class="text-lg font-bold text-on-surface">{{ $activeLoansCount }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-outline">Sisa Pinjaman</span>
+                            <span class="text-lg font-bold text-amber-700">Rp {{ number_format($totalOutstanding, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-outline">Total Pinjaman</span>
+                            <span class="text-lg font-bold text-on-surface">{{ $loans->count() }}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-5">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-6">
+                    <div class="flex items-center gap-3 border-b border-outline-variant pb-4">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
                             <span class="material-symbols-outlined icon-fill">event_repeat</span>
                         </div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Angsuran Jatuh Tempo</p>
-                    </div>
-                    <p class="mt-3 text-2xl font-bold tracking-tight text-on-surface">
-                        {{ $dueInstallmentsCount }}
-                    </p>
-                    <p class="mt-1 text-xs text-outline">Belum dibayar / sebagian</p>
-                </div>
-
-                <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-5">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl {{ $overdueInstallmentsCount > 0 ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600' }}">
-                            <span class="material-symbols-outlined icon-fill">error</span>
+                        <div>
+                            <h2 class="text-lg font-bold text-on-surface">Angsuran</h2>
+                            <p class="text-xs text-outline">Progress pembayaran cicilan.</p>
                         </div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Angsuran Telat</p>
                     </div>
-                    <p class="mt-3 text-2xl font-bold tracking-tight {{ $overdueInstallmentsCount > 0 ? 'text-error' : 'text-on-surface' }}">
-                        {{ $overdueInstallmentsCount }}
-                    </p>
-                    <p class="mt-1 text-xs text-outline">
-                        {{ $paidInstallmentsCount }} lunas
-                    </p>
+                    <div class="mt-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-outline">Jatuh Tempo</span>
+                            <span class="text-lg font-bold text-on-surface">{{ $dueInstallmentsCount }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-outline">Telat</span>
+                            <span class="text-lg font-bold {{ $overdueInstallmentsCount > 0 ? 'text-error' : 'text-on-surface' }}">{{ $overdueInstallmentsCount }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-outline">Lunas</span>
+                            <span class="text-lg font-bold text-emerald-700">{{ $paidInstallmentsCount }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,7 +202,12 @@
         {{-- Ringkasan Simpanan per Jenis --}}
         @if ($savingsByType->isNotEmpty())
             <div class="dashboard-card mt-6 rounded-3xl bg-surface-container-lowest p-6">
-                <h2 class="text-lg font-bold text-on-surface">Saldo per Jenis Simpanan</h2>
+                <div class="flex items-center justify-between border-b border-outline-variant pb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-on-surface">Saldo per Jenis Simpanan</h2>
+                        <p class="text-xs text-outline">Akumulasi setoran dan penarikan per jenis.</p>
+                    </div>
+                </div>
                 <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($savingsByType as $row)
                         <div class="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-4">
@@ -357,7 +416,7 @@
         <div class="mt-6 flex items-center justify-between rounded-2xl bg-surface-container-lowest px-5 py-4">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Aksi Cepat</p>
-                <p class="text-sm font-semibold text-on-surface">Hapus data anggota ini jika sudah tidak aktif.</p>
+                <p class="text-sm font-semibold text-on-surface">Hapus data anggota ini jika sudah berstatus pasif.</p>
             </div>
             <form
                 action="{{ route('members.destroy', $member) }}"

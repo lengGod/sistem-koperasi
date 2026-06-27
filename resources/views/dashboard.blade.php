@@ -25,7 +25,7 @@
     <section class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         @foreach ([
             ['label' => 'Total Anggota', 'value' => number_format($totalMembers), 'icon' => 'group', 'tone' => 'bg-primary-fixed text-primary', 'note' => 'Anggota terdaftar'],
-            ['label' => 'Total Simpanan', 'value' => 'Rp '.number_format($totalSavings, 0, ',', '.'), 'icon' => 'account_balance', 'tone' => 'bg-secondary-fixed text-secondary', 'note' => 'Akumulasi seluruh transaksi'],
+            ['label' => 'Total Simpanan', 'value' => 'Rp '.number_format($totalSavings, 0, ',', '.'), 'icon' => 'account_balance', 'tone' => 'bg-secondary-fixed text-secondary', 'note' => 'Akumulasi saldo dari data transaksi'],
             ['label' => 'Pinjaman Aktif', 'value' => number_format($activeLoans), 'icon' => 'payments', 'tone' => 'bg-tertiary-fixed text-tertiary', 'note' => 'Pinjaman berjalan'],
             ['label' => 'Angsuran Perlu Proses', 'value' => number_format($dueInstallments), 'icon' => 'event_repeat', 'tone' => 'bg-surface-container-high text-on-surface', 'note' => 'Pending, partial, late'],
         ] as $card)
@@ -49,11 +49,11 @@
                 <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary-fixed text-secondary">
                     <span class="material-symbols-outlined">account_balance</span>
                 </div>
-                <span class="rounded-full bg-surface-container-low px-2.5 py-1 text-[11px] font-extrabold text-on-surface-variant">Bulan ini</span>
+                <span class="rounded-full bg-surface-container-low px-2.5 py-1 text-[11px] font-extrabold text-on-surface-variant">{{ $reportDate->locale(app()->getLocale())->translatedFormat('M Y') }}</span>
             </div>
-            <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Simpanan Masuk</p>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Simpanan Masuk Periode</p>
             <h3 class="mt-1 text-3xl font-extrabold tracking-tight text-on-surface">Rp {{ number_format($totalSavingsThisMonth, 0, ',', '.') }}</h3>
-            <p class="mt-2 text-sm text-outline">Total transaksi simpanan pada bulan berjalan.</p>
+            <p class="mt-2 text-sm text-outline">Total transaksi simpanan pada periode data terakhir.</p>
         </article>
 
         <article class="dashboard-card rounded-3xl bg-surface-container-lowest p-6">
@@ -85,8 +85,8 @@
         <article class="dashboard-card rounded-3xl bg-surface-container-lowest p-6 xl:col-span-8">
             <div class="mb-8 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                 <div>
-                    <h3 class="text-xl font-bold text-on-surface">Grafik Simpanan & Angsuran Bulanan</h3>
-                    <p class="text-sm text-outline">Data 6 bulan terakhir dari transaksi yang sudah tersimpan.</p>
+                    <h3 class="text-xl font-bold text-on-surface">Grafik Akumulasi Simpanan & Angsuran</h3>
+                    <p class="text-sm text-outline">Saldo simpanan berjalan mengikuti akumulasi data seeder dan transaksi tersimpan.</p>
                 </div>
                 <div class="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
                     Total maksimum: Rp {{ number_format($maxTotal, 0, ',', '.') }}
@@ -97,11 +97,11 @@
                 <div class="flex h-72 items-end gap-3 sm:gap-5">
                     @foreach ($chartBars as $bar)
                         @php
-                            $savingsHeight = max(4, ($bar['savings'] / $maxTotal) * 100);
-                            $installmentsHeight = max(4, ($bar['installments'] / $maxTotal) * 100);
+                            $savingsHeight = $bar['savings'] > 0 ? max(4, ($bar['savings'] / $maxTotal) * 100) : 0;
+                            $installmentsHeight = $bar['installments'] > 0 ? max(4, ($bar['installments'] / $maxTotal) * 100) : 0;
                         @endphp
-                        <div class="group flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
-                            <div class="flex w-full items-end gap-1">
+                        <div class="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-3">
+                            <div class="flex min-h-0 w-full flex-1 items-end gap-1">
                                 <div class="relative flex-1 rounded-t-xl bg-primary-container/35 transition group-hover:bg-primary-container" style="height: {{ $savingsHeight }}%">
                                     <span class="absolute -top-8 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-on-surface px-2 py-1 text-[10px] font-bold text-inverse-on-surface group-hover:block">
                                         Rp {{ number_format($bar['savings'], 0, ',', '.') }}
@@ -113,13 +113,13 @@
                                     </span>
                                 </div>
                             </div>
-                            <span class="text-xs font-bold text-outline">{{ $bar['month'] }}</span>
+                            <span class="text-center text-xs font-bold leading-tight text-outline">{{ $bar['month'] }}</span>
                         </div>
                     @endforeach
                 </div>
 
                 <div class="mt-5 flex flex-wrap gap-4 text-xs font-bold text-on-surface-variant">
-                    <span class="inline-flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-primary-container"></span>Simpanan</span>
+                    <span class="inline-flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-primary-container"></span>Akumulasi Simpanan</span>
                     <span class="inline-flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-tertiary"></span>Angsuran</span>
                 </div>
             </div>

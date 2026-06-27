@@ -10,9 +10,9 @@ use Illuminate\Validation\Rule;
 
 class SavingsTypeController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $savingsTypes = SavingsType::query()->latest()->paginate(10)->withQueryString();
+        $savingsTypes = SavingsType::query()->orderBy('name')->paginate(10)->withQueryString();
 
         return view('savings-types.index', compact('savingsTypes'));
     }

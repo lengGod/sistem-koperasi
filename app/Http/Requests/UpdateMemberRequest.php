@@ -31,6 +31,7 @@ class UpdateMemberRequest extends FormRequest
                 'max:50',
                 Rule::unique('members', 'member_number')->ignore($this->route('member')),
             ],
+            'account_number' => ['nullable', 'string', 'max:32', Rule::unique('members', 'account_number')->ignore($this->route('member'))->whereNotNull('account_number')],
             'work_unit' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['required', 'date'],

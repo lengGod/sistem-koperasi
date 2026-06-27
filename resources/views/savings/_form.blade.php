@@ -1,16 +1,41 @@
 @csrf
 
-@php $isEdit = $saving->exists; @endphp
+@php
+    $isEdit = $saving->exists;
+    $selectedMember = $members->firstWhere('id', old('member_id', $saving->member_id));
+    $selectedMemberLabel = $selectedMember
+        ? $selectedMember->member_number . ' - ' . $selectedMember->name
+        : '';
+@endphp
 
-<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+<div class="grid grid-cols-1 gap-5 md:grid-cols-2"
+     x-data="{
+         memberId: @js(old('member_id', $saving->member_id)),
+         memberLabel: @js($selectedMemberLabel),
+         members: @js($members->map(fn ($m) => ['id' => $m->id, 'label' => $m->member_number . ' - ' . $m->name])->values()->all()),
+         resolveMember(value) {
+             const match = this.members.find((m) => m.label === value);
+             this.memberId = match ? match.id : '';
+         }
+     }">
     <div>
-        <label for="member_id" class="mb-2 block text-sm font-bold text-on-surface">Anggota</label>
-        <select id="member_id" name="member_id" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-            <option value="">Pilih anggota</option>
+        <label for="member_label" class="mb-2 block text-sm font-bold text-on-surface">Anggota</label>
+        <input
+            id="member_label"
+            list="members-list"
+            type="text"
+            autocomplete="off"
+            x-model="memberLabel"
+            @change="resolveMember($event.target.value)"
+            placeholder="Ketik nama, KOP-XXXX, atau no rekening"
+            class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary"
+            required>
+        <input type="hidden" name="member_id" :value="memberId">
+        <datalist id="members-list">
             @foreach ($members as $member)
-                <option value="{{ $member->id }}" @selected((string) old('member_id', $saving->member_id) === (string) $member->id)>{{ $member->member_number }} - {{ $member->name }}</option>
+                <option value="{{ $member->member_number }} - {{ $member->name }}"></option>
             @endforeach
-        </select>
+        </datalist>
         @error('member_id') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 

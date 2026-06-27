@@ -72,7 +72,7 @@
             <div class="flex items-center gap-3 px-6 py-6">
                 <img src="{{ asset('logo.png') }}" alt="Logo Koperasi" class="h-12 w-12 shrink-0 object-contain">
                 <div class="min-w-0 flex-1">
-                    <h1 class="truncate text-lg font-extrabold text-primary">Koperasi Digital</h1>
+                    <h1 class="truncate text-lg font-extrabold text-primary">Koperasi Siger</h1>
                     <p class="text-xs font-semibold uppercase tracking-[0.14em] text-outline">Admin Portal</p>
                 </div>
                 <button @click="sidebarOpen = false"

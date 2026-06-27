@@ -15,12 +15,6 @@
     </div>
 
     <div>
-        <label for="installment_number" class="mb-2 block text-sm font-bold text-on-surface">Nomor Angsuran</label>
-        <input id="installment_number" name="installment_number" type="number" value="{{ old('installment_number', $installment->installment_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-        @error('installment_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
         <label for="due_date" class="mb-2 block text-sm font-bold text-on-surface">Jatuh Tempo</label>
         <input id="due_date" name="due_date" type="date" value="{{ old('due_date', optional($installment->due_date)->format('Y-m-d')) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('due_date') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror

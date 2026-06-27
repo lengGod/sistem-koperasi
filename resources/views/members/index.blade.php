@@ -10,39 +10,49 @@
             <p class="mt-1 text-sm text-outline">Cari, filter, dan kelola data anggota koperasi.</p>
         </div>
 
-        <a href="{{ route('members.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
+        <a href="{{ route('members.create') }}"
+            class="inline-flex items-center gap-2 rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
             <span class="material-symbols-outlined icon-fill text-[20px]">person_add</span>
             Tambah Anggota
         </a>
     </section>
 
-    <form method="GET" action="{{ route('members.index') }}" class="dashboard-card mb-6 rounded-3xl bg-surface-container-lowest p-5">
+    <form method="GET" action="{{ route('members.index') }}"
+        class="dashboard-card mb-6 rounded-3xl bg-surface-container-lowest p-5">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div class="md:col-span-2">
                 <label for="search" class="mb-2 block text-sm font-bold text-on-surface">Cari</label>
-                <input id="search" name="search" value="{{ request('search') }}" placeholder="Nama, no rekening, unit kerja, no telp, atau status pekerja" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+                <input id="search" name="search" value="{{ request('search') }}"
+                    placeholder="Nama, no rekening, unit kerja"
+                    class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
 
             <div>
                 <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status Keanggotaan</label>
-                <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+                <select id="status" name="status"
+                    class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
                     <option value="">Semua</option>
                     <option value="active" @selected(request('status') === 'active')>Aktif</option>
-                    <option value="inactive" @selected(request('status') === 'inactive')>Tidak Aktif</option>
+                    <option value="inactive" @selected(request('status') === 'inactive')>Pasif</option>
                 </select>
             </div>
 
             <div>
-                <label for="employment_status" class="mb-2 block text-sm font-bold text-on-surface">Status Pekerja</label>
-                <input id="employment_status" name="employment_status" value="{{ request('employment_status') }}" placeholder="Semua status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+                <label for="employment_status" class="mb-2 block text-sm font-bold text-on-surface">Status
+                    Pekerja</label>
+                <input id="employment_status" name="employment_status" value="{{ request('employment_status') }}"
+                    placeholder="Semua status"
+                    class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
         </div>
 
         <div class="mt-4 flex flex-wrap justify-end gap-2">
-            <a href="{{ route('members.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
+            <a href="{{ route('members.index') }}"
+                class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
                 Reset
             </a>
-            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
+            <button type="submit"
+                class="inline-flex items-center gap-2 rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
                 <span class="material-symbols-outlined icon-fill text-[20px]">filter_alt</span>
                 Terapkan
             </button>
@@ -53,43 +63,42 @@
         $memberIds = $members->pluck('id')->all();
     @endphp
 
-    <form
-        x-data="{
-            selected: [],
-            memberIds: @js($memberIds),
-            allSelected() { return this.memberIds.length > 0 && this.selected.length === this.memberIds.length; },
-            toggleAll(checked) { this.selected = checked ? this.memberIds.slice() : []; },
-            toggleOne(id, checked) {
-                const stringId = String(id);
-                if (checked) {
-                    if (!this.selected.includes(stringId)) this.selected.push(stringId);
-                } else {
-                    this.selected = this.selected.filter((value) => value !== stringId);
-                }
-            },
-        }"
-        method="POST"
-        action="{{ route('members.bulk-destroy') }}"
-        data-confirm="Anda akan menghapus anggota yang dipilih."
-        data-confirm-title="Hapus anggota terpilih"
+    <form x-data="{
+        selected: [],
+        memberIds: @js($memberIds),
+        allSelected() { return this.memberIds.length > 0 && this.selected.length === this.memberIds.length; },
+        toggleAll(checked) { this.selected = checked ? this.memberIds.map(String) : []; },
+        toggleOne(id, checked) {
+            const stringId = String(id);
+            if (checked) {
+                if (!this.selected.includes(stringId)) this.selected.push(stringId);
+            } else {
+                this.selected = this.selected.filter((value) => value !== stringId);
+            }
+        },
+    }" method="POST" action="{{ route('members.bulk-destroy') }}"
+        data-confirm="Anda akan menghapus anggota yang dipilih." data-confirm-title="Hapus anggota terpilih"
         data-confirm-message="Tindakan ini akan menghapus semua anggota yang dicentang dan tidak dapat dibatalkan."
-        data-confirm-button="Ya, hapus"
-        data-confirm-tone="danger"
-        class="dashboard-card overflow-hidden rounded-3xl bg-surface-container-lowest"
-    >
+        data-confirm-button="Ya, hapus" data-confirm-tone="danger"
+        class="dashboard-card overflow-hidden rounded-3xl bg-surface-container-lowest">
         @csrf
 
-        <div class="flex flex-col gap-3 border-b border-outline-variant px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div
+            class="flex flex-col gap-3 border-b border-outline-variant px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h3 class="text-lg font-bold text-on-surface">Data Anggota</h3>
                 <p class="text-sm text-outline">Pilih satu atau lebih anggota untuk dihapus bersamaan.</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low" @click="toggleAll(!allSelected())">
+                <button type="button"
+                    class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low"
+                    @click="toggleAll(!allSelected())">
                     Pilih Semua
                 </button>
-                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-error-container px-4 py-2 text-sm font-bold text-on-error-container transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50" :disabled="selected.length === 0">
+                <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-error-container px-4 py-2 text-sm font-bold text-on-error-container transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    :disabled="selected.length === 0">
                     <span class="material-symbols-outlined text-[20px]">delete</span>
                     Hapus Terpilih
                 </button>
@@ -98,19 +107,35 @@
 
         <div class="overflow-x-auto">
             <table class="w-full min-w-[1160px] text-left text-sm">
-                <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
+                <thead
+                    class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
+                            <input type="checkbox"
+                                class="rounded border-outline-variant text-primary focus:ring-primary"
+                                @click="toggleAll(!allSelected())"
+                                :checked="allSelected()">
                         </th>
                         <th class="px-6 py-4">No</th>
                         <th class="px-6 py-4">No Rekening</th>
-                        <th class="px-6 py-4">Nama</th>
+                        @php
+    $isNameSort = request('sort') === 'name';
+    $sortParams = request()->except('sort');
+    if (! $isNameSort) {
+        $sortParams['sort'] = 'name';
+    }
+@endphp
+<th class="px-6 py-4">
+    <a href="{{ route('members.index', $sortParams) }}" class="inline-flex items-center gap-1 transition hover:text-primary">
+        Nama
+        @if ($isNameSort)
+            <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+        @endif
+    </a>
+</th>
                         <th class="px-6 py-4">Unit Kerja</th>
-                        <th class="px-6 py-4">No Telp</th>
                         <th class="px-6 py-4">Tanggal Bergabung</th>
                         <th class="px-6 py-4">Status Keanggotaan</th>
-                        <th class="px-6 py-4">Status Pekerja</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -118,26 +143,34 @@
                     @forelse ($members as $member)
                         <tr class="transition hover:bg-surface-container">
                             <td class="px-6 py-4">
-                                <input type="checkbox" name="member_ids[]" value="{{ $member->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="selected.includes(String({{ $member->id }}))" @change="toggleOne({{ $member->id }}, $event.target.checked)">
+                                <input type="checkbox" name="member_ids[]" value="{{ $member->id }}"
+                                    class="rounded border-outline-variant text-primary focus:ring-primary"
+                                    :checked="selected.includes(String({{ $member->id }}))"
+                                    @change="toggleOne({{ $member->id }}, $event.target.checked)">
                             </td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ $loop->iteration + ($members->currentPage() - 1) * $members->perPage() }}</td>
-                            <td class="px-6 py-4 font-bold text-on-surface">{{ $member->member_number }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">
+                                {{ $loop->iteration + ($members->currentPage() - 1) * $members->perPage() }}</td>
+                            <td class="px-6 py-4 font-bold text-on-surface">{{ $member->account_number ?: '-' }}</td>
                             <td class="px-6 py-4 font-bold text-on-surface">{{ $member->name }}</td>
                             <td class="px-6 py-4 text-on-surface-variant">{{ $member->work_unit ?: '-' }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ $member->phone ?: '-' }}</td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ optional($member->joined_at)->format('d M Y') }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">
+                                {{ optional($member->joined_at)->format('d M Y') }}</td>
                             <td class="px-6 py-4">
-                                <span class="{{ $member->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-error-container text-on-error-container' }} rounded-full px-2.5 py-1 text-xs font-extrabold">
-                                    {{ $member->status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
+                                <span
+                                    class="{{ $member->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700' }} inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-extrabold">
+                                    <span
+                                        class="material-symbols-outlined text-[14px]">{{ $member->status === 'active' ? 'check_circle' : 'pause_circle' }}</span>
+                                    {{ $member->status === 'active' ? 'Aktif' : 'Pasif' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-on-surface-variant">{{ $member->employment_status ?: '-' }}</td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2">
-                                    <a href="{{ route('members.show', $member) }}" class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
+                                    <a href="{{ route('members.show', $member) }}"
+                                        class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
                                         Detail
                                     </a>
-                                    <a href="{{ route('members.edit', $member) }}" class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-primary transition hover:bg-primary-fixed">
+                                    <a href="{{ route('members.edit', $member) }}"
+                                        class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-primary transition hover:bg-primary-fixed">
                                         Edit
                                     </a>
                                 </div>

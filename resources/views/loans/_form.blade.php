@@ -3,20 +3,53 @@
 @php
     $isEdit = $loan->exists;
     $selectedMember = $members->firstWhere('id', old('member_id', $loan->member_id));
+    $selectedMemberLabel = $selectedMember
+        ? $selectedMember->member_number . ' - ' . $selectedMember->name
+        : '';
 @endphp
 
 <input type="hidden" name="loan_number" value="{{ old('loan_number', $loan->loan_number) }}">
 <input type="hidden" name="status" value="{{ old('status', $loan->status ?: 'active') }}">
 
-<div class="grid grid-cols-1 gap-5 md:grid-cols-2" x-data="{ accountNumber: @js($selectedMember?->member_number ?? '') }">
+<div class="grid grid-cols-1 gap-5 md:grid-cols-2"
+     x-data="{
+         memberId: @js(old('member_id', $loan->member_id)),
+         memberLabel: @js($selectedMemberLabel),
+         accountNumber: @js($selectedMember?->account_number ?? ''),
+         members: @js($members->map(fn ($m) => [
+             'id' => $m->id,
+             'label' => $m->member_number . ' - ' . $m->name,
+             'account_number' => $m->account_number,
+         ])->values()->all()),
+         resolveMember(value) {
+             const match = this.members.find((m) => m.label === value);
+             if (match) {
+                 this.memberId = match.id;
+                 this.accountNumber = match.account_number || '';
+             } else {
+                 this.memberId = '';
+                 this.accountNumber = '';
+             }
+         }
+     }">
     <div>
-        <label for="member_id" class="mb-2 block text-sm font-bold text-on-surface">Nama</label>
-        <select id="member_id" name="member_id" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required @change="accountNumber = $event.target.selectedOptions[0]?.dataset.account || ''">
-            <option value="">Pilih anggota</option>
+        <label for="member_label" class="mb-2 block text-sm font-bold text-on-surface">Nama</label>
+        <input
+            id="member_label"
+            list="members-list-loan"
+            type="text"
+            autocomplete="off"
+            x-model="memberLabel"
+            @change="resolveMember($event.target.value)"
+            placeholder="Ketik nama, KOP-XXXX, atau no rekening"
+            class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary"
+            required>
+        <input type="hidden" name="member_id" :value="memberId">
+        <datalist id="members-list-loan">
             @foreach ($members as $member)
-                <option value="{{ $member->id }}" data-account="{{ $member->member_number }}" @selected((string) old('member_id', $loan->member_id) === (string) $member->id)>{{ $member->name }}</option>
+                <option value="{{ $member->member_number }} - {{ $member->name }}"></option>
             @endforeach
-        </select>
+        </datalist>
         @error('member_id') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 

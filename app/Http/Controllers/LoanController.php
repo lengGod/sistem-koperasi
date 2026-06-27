@@ -12,13 +12,11 @@ use Illuminate\Validation\Rule;
 
 class LoanController extends Controller
 {
-    public function __construct(private readonly LoanService $loans)
-    {
-    }
+    public function __construct(private readonly LoanService $loans) {}
 
     public function index(Request $request): View
     {
-        $loans = $this->loans->paginate($request->only(['search', 'status']));
+        $loans = $this->loans->paginate($request->only(['search', 'status', 'sort']));
 
         return view('loans.index', compact('loans'));
     }
@@ -125,7 +123,7 @@ class LoanController extends Controller
     private function generateLoanNumber(): string
     {
         do {
-            $loanNumber = 'LN-'.now()->format('YmdHis').'-'.random_int(100, 999);
+            $loanNumber = 'LN-' . now()->format('YmdHi') . '-' . random_int(100, 999);
         } while (Loan::where('loan_number', $loanNumber)->exists());
 
         return $loanNumber;

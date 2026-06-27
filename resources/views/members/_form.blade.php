@@ -12,9 +12,9 @@
     </div>
 
     <div>
-        <label for="member_number" class="mb-2 block text-sm font-bold text-on-surface">No Rekening</label>
-        <input id="member_number" name="member_number" value="{{ old('member_number', $member->member_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-        @error('member_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+        <label for="account_number" class="mb-2 block text-sm font-bold text-on-surface">No Rekening</label>
+        <input id="account_number" name="account_number" value="{{ old('account_number', $member->account_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+        @error('account_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
@@ -39,7 +39,7 @@
         <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status Keanggotaan</label>
         <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
             <option value="active" @selected(old('status', $member->status) === 'active')>Aktif</option>
-            <option value="inactive" @selected(old('status', $member->status) === 'inactive')>Tidak Aktif</option>
+            <option value="inactive" @selected(old('status', $member->status) === 'inactive')>Pasif</option>
         </select>
         @error('status') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>

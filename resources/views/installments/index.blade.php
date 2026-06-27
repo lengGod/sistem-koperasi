@@ -50,7 +50,7 @@
             selected: [],
             installmentIds: @js($installmentIds),
             allSelected() { return this.installmentIds.length > 0 && this.selected.length === this.installmentIds.length; },
-            toggleAll(checked) { this.selected = checked ? this.installmentIds.slice() : []; },
+            toggleAll(checked) { this.selected = checked ? this.installmentIds.map(String) : []; },
             toggleOne(id, checked) {
                 const stringId = String(id);
                 if (checked) {
@@ -93,8 +93,23 @@
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
                         <th class="w-14 px-6 py-4">
-                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="allSelected()" @change="toggleAll($event.target.checked)">
+                            <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary" @click="toggleAll(!allSelected())" :checked="allSelected()">
                         </th>
+                        @php
+    $isMemberNameSort = request('sort') === 'member_name';
+    $memberSortParams = request()->except('sort');
+    if (! $isMemberNameSort) {
+        $memberSortParams['sort'] = 'member_name';
+    }
+@endphp
+<th class="px-6 py-4">
+    <a href="{{ route('installments.index', $memberSortParams) }}" class="inline-flex items-center gap-1 transition hover:text-primary">
+        Anggota
+        @if ($isMemberNameSort)
+            <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+        @endif
+    </a>
+</th>
                         <th class="px-6 py-4">Pinjaman</th>
                         <th class="px-6 py-4">No.</th>
                         <th class="px-6 py-4">Jatuh Tempo</th>
@@ -110,6 +125,7 @@
                             <td class="px-6 py-4">
                                 <input type="checkbox" name="installment_ids[]" value="{{ $installment->id }}" class="rounded border-outline-variant text-primary focus:ring-primary" :checked="selected.includes(String({{ $installment->id }}))" @change="toggleOne({{ $installment->id }}, $event.target.checked)">
                             </td>
+                            <td class="px-6 py-4 font-bold text-on-surface">{{ $installment->loan?->member?->name ?? '-' }}</td>
                             <td class="px-6 py-4 font-bold text-on-surface">{{ $installment->loan?->loan_number ?? '-' }}</td>
                             <td class="px-6 py-4 text-on-surface-variant">{{ $installment->installment_number }}</td>
                             <td class="px-6 py-4 text-on-surface-variant">{{ optional($installment->due_date)->format('d M Y') }}</td>
@@ -143,7 +159,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="px-6 py-10 text-center text-sm text-outline">Belum ada data angsuran.</td></tr>
+                        <tr><td colspan="9" class="px-6 py-10 text-center text-sm text-outline">Belum ada data angsuran.</td></tr>
                     @endforelse
                 </tbody>
             </table>
