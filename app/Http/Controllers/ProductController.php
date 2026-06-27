@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProductController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */

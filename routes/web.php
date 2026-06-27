@@ -5,9 +5,11 @@ use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\SavingsTypeController;
+use App\Http\Controllers\TransactionController;
 use App\Models\Installment;
 use App\Models\Loan;
 use App\Models\Member;
@@ -49,6 +51,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('products', ProductController::class);
     Route::resource('product-categories', ProductCategoryController::class);
+    Route::resource('transactions', TransactionController::class);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
