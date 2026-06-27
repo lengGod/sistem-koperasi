@@ -60,8 +60,8 @@
     </div>
 
     <div>
-        <label for="amount" class="mb-2 block text-sm font-bold text-on-surface">Nominal</label>
-        <input id="amount" name="amount" type="number" step="0.01" value="{{ old('amount', $saving->amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <label for="amount" class="mb-2 block text-sm font-bold text-on-surface">Nominal (Rp)</label>
+        <input id="amount" name="amount" type="number" step="1" value="{{ (int)old('amount', $saving->amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('amount') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
