@@ -59,8 +59,8 @@
     </div>
 
     <div>
-        <label for="principal_amount" class="mb-2 block text-sm font-bold text-on-surface">Plafond Pinjaman</label>
-        <input id="principal_amount" name="principal_amount" type="number" step="0.01" value="{{ old('principal_amount', $loan->principal_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <label for="principal_amount" class="mb-2 block text-sm font-bold text-on-surface">Plafond Pinjaman (Rp)</label>
+        <input id="principal_amount" name="principal_amount" type="number" step="1" value="{{ (int)old('principal_amount', $loan->principal_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('principal_amount') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
@@ -83,8 +83,8 @@
     </div>
 
     <div>
-        <label for="monthly_installment" class="mb-2 block text-sm font-bold text-on-surface">Angsuran Pokok</label>
-        <input id="monthly_installment" name="monthly_installment" type="number" step="0.01" value="{{ old('monthly_installment', $loan->monthly_installment) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <label for="monthly_installment" class="mb-2 block text-sm font-bold text-on-surface">Angsuran Pokok (Rp)</label>
+        <input id="monthly_installment" name="monthly_installment" type="number" step="1" value="{{ (int)old('monthly_installment', $loan->monthly_installment) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('monthly_installment') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
@@ -95,8 +95,8 @@
     </div>
 
     <div>
-        <label for="remaining_balance" class="mb-2 block text-sm font-bold text-on-surface">Sisa Pinjaman</label>
-        <input id="remaining_balance" name="remaining_balance" type="number" step="0.01" value="{{ old('remaining_balance', $loan->remaining_balance ?? $loan->principal_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+        <label for="remaining_balance" class="mb-2 block text-sm font-bold text-on-surface">Sisa Pinjaman (Rp)</label>
+        <input id="remaining_balance" name="remaining_balance" type="number" step="1" value="{{ (int)old('remaining_balance', $loan->remaining_balance ?? $loan->principal_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
         @error('remaining_balance') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 </div>
