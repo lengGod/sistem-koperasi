@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\SavingsTypeController;
@@ -45,6 +46,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('installments/bulk-destroy', [InstallmentController::class, 'bulkDestroy'])->name('installments.bulk-destroy');
     Route::resource('installments', InstallmentController::class);
+
+    Route::resource('products', ProductController::class);
+    Route::resource('product-categories', ProductCategoryController::class);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

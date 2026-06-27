@@ -36,5 +36,6 @@ class DatabaseSeeder extends Seeder
         $this->call(SavingsTypeSeeder::class);
         $this->call(KoperasiMemberSeeder::class);
         $this->call(SavingsSeeder::class);
+        $this->call(PermissionSeeder::class);
     }
 }
