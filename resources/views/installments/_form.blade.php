@@ -2,13 +2,19 @@
 
 @php $isEdit = $installment->exists; @endphp
 
-<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+<div x-data="{
+    loanId: '{{ old('loan_id', $installment->loan_id) }}',
+    loans: {{ $loans->toJson() }},
+    get selectedLoan() {
+        return this.loans.find(loan => String(loan.id) === String(this.loanId)) || {};
+    }
+}" class="grid grid-cols-1 gap-5 md:grid-cols-2">
     <div>
         <label for="loan_id" class="mb-2 block text-sm font-bold text-on-surface">Pinjaman</label>
-        <select id="loan_id" name="loan_id" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <select id="loan_id" name="loan_id" x-model="loanId" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
             <option value="">Pilih pinjaman</option>
             @foreach ($loans as $loan)
-                <option value="{{ $loan->id }}" @selected((string) old('loan_id', $installment->loan_id) === (string) $loan->id)>{{ $loan->loan_number }} - {{ $loan->member?->name ?? '-' }}</option>
+                <option value="{{ $loan->id }}">{{ $loan->loan_number }} - {{ $loan->member?->name ?? '-' }}</option>
             @endforeach
         </select>
         @error('loan_id') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
@@ -16,14 +22,14 @@
 
     <div>
         <label for="due_date" class="mb-2 block text-sm font-bold text-on-surface">Jatuh Tempo</label>
-        <input id="due_date" name="due_date" type="date" value="{{ old('due_date', optional($installment->due_date)->format('Y-m-d')) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <input id="due_date" name="due_date" type="date" :value="selectedLoan.due_date ? selectedLoan.due_date.split('T')[0] : '{{ old('due_date', optional($installment->due_date)->format('Y-m-d')) }}'" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('due_date') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
         <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status</label>
         <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-            @foreach (['pending' => 'Pending', 'partial' => 'Sebagian', 'paid' => 'Lunas', 'late' => 'Terlambat'] as $value => $label)
+            @foreach (['pending' => 'Menunggu', 'partial' => 'Sebagian', 'paid' => 'Lunas', 'late' => 'Terlambat'] as $value => $label)
                 <option value="{{ $value }}" @selected(old('status', $installment->status) === $value)>{{ $label }}</option>
             @endforeach
         </select>
@@ -31,26 +37,26 @@
     </div>
 
     <div>
-        <label for="principal_amount" class="mb-2 block text-sm font-bold text-on-surface">Pokok</label>
-        <input id="principal_amount" name="principal_amount" type="number" step="0.01" value="{{ old('principal_amount', $installment->principal_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <label for="principal_amount" class="mb-2 block text-sm font-bold text-on-surface">Pokok (Rp)</label>
+        <input id="principal_amount" name="principal_amount" type="number" step="1" :value="Math.floor(selectedLoan.monthly_installment) || '{{ (int)old('principal_amount', $installment->principal_amount) }}'" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" readonly required>
         @error('principal_amount') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label for="interest_amount" class="mb-2 block text-sm font-bold text-on-surface">Bunga</label>
-        <input id="interest_amount" name="interest_amount" type="number" step="0.01" value="{{ old('interest_amount', $installment->interest_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <label for="interest_amount" class="mb-2 block text-sm font-bold text-on-surface">Bunga (Rp)</label>
+        <input id="interest_amount" name="interest_amount" type="number" step="1" value="{{ (int)old('interest_amount', $installment->interest_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('interest_amount') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label for="amount" class="mb-2 block text-sm font-bold text-on-surface">Total Tagihan</label>
-        <input id="amount" name="amount" type="number" step="0.01" value="{{ old('amount', $installment->amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <label for="amount" class="mb-2 block text-sm font-bold text-on-surface">Total Tagihan (Rp)</label>
+        <input id="amount" name="amount" type="number" step="1" :value="Math.floor(Number(selectedLoan.monthly_installment) || 0) + {{ (int)old('interest_amount', $installment->interest_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" readonly required>
         @error('amount') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label for="paid_amount" class="mb-2 block text-sm font-bold text-on-surface">Jumlah Dibayar</label>
-        <input id="paid_amount" name="paid_amount" type="number" step="0.01" value="{{ old('paid_amount', $installment->paid_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+        <label for="paid_amount" class="mb-2 block text-sm font-bold text-on-surface">Jumlah Dibayar (Rp)</label>
+        <input id="paid_amount" name="paid_amount" type="number" step="1" value="{{ (int)old('paid_amount', $installment->paid_amount) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
         @error('paid_amount') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 

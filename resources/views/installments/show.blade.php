@@ -64,7 +64,12 @@
                     <dt class="text-xs font-bold uppercase tracking-[0.16em] text-outline">Status</dt>
                     <dd class="mt-1 text-sm font-semibold text-on-surface">
                         <span class="rounded-full px-2.5 py-0.5 text-xs font-bold bg-surface-container-high">
-                            {{ ucfirst($installment->status) }}
+                            {{ [
+                                'pending' => 'Menunggu',
+                                'partial' => 'Sebagian',
+                                'paid'    => 'Lunas',
+                                'late'    => 'Terlambat'
+                            ][$installment->status] ?? ucfirst($installment->status) }}
                         </span>
                     </dd>
                 </div>
