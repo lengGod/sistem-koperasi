@@ -18,42 +18,64 @@
 <body class="bg-surface text-on-surface antialiased">
     @php
         $navItems = [
-            [
-                'label' => 'Dashboard',
-                'icon' => 'dashboard',
-                'href' => route('dashboard'),
-                'active' => request()->routeIs('dashboard'),
+            'Koperasi' => [
+                [
+                    'label' => 'Dashboard',
+                    'icon' => 'dashboard',
+                    'href' => route('dashboard'),
+                    'active' => request()->routeIs('dashboard'),
+                ],
+                [
+                    'label' => 'Anggota',
+                    'icon' => 'group',
+                    'href' => route('members.index'),
+                    'active' => request()->routeIs('members.*'),
+                ],
+                [
+                    'label' => 'Jenis Simpanan',
+                    'icon' => 'category',
+                    'href' => route('savings-types.index'),
+                    'active' => request()->routeIs('savings-types.*'),
+                ],
+                [
+                    'label' => 'Simpanan',
+                    'icon' => 'account_balance',
+                    'href' => route('savings.index'),
+                    'active' => request()->routeIs('savings.*'),
+                ],
+                [
+                    'label' => 'Pinjaman',
+                    'icon' => 'payments',
+                    'href' => route('loans.index'),
+                    'active' => request()->routeIs('loans.*'),
+                ],
+                [
+                    'label' => 'Angsuran',
+                    'icon' => 'event_repeat',
+                    'href' => route('installments.index'),
+                    'active' => request()->routeIs('installments.*'),
+                ],
             ],
-            [
-                'label' => 'Anggota',
-                'icon' => 'group',
-                'href' => route('members.index'),
-                'active' => request()->routeIs('members.*'),
-            ],
-            [
-                'label' => 'Jenis Simpanan',
-                'icon' => 'category',
-                'href' => route('savings-types.index'),
-                'active' => request()->routeIs('savings-types.*'),
-            ],
-            [
-                'label' => 'Simpanan',
-                'icon' => 'account_balance',
-                'href' => route('savings.index'),
-                'active' => request()->routeIs('savings.*'),
-            ],
-            [
-                'label' => 'Pinjaman',
-                'icon' => 'payments',
-                'href' => route('loans.index'),
-                'active' => request()->routeIs('loans.*'),
-            ],
-            [
-                'label' => 'Angsuran',
-                'icon' => 'event_repeat',
-                'href' => route('installments.index'),
-                'active' => request()->routeIs('installments.*'),
-            ],
+            'Stok & Kasir' => [
+                [
+                    'label' => 'Kategori Barang',
+                    'icon' => 'list_alt',
+                    'href' => route('product-categories.index'),
+                    'active' => request()->routeIs('product-categories.*'),
+                ],
+                [
+                    'label' => 'Stok Barang',
+                    'icon' => 'inventory_2',
+                    'href' => route('products.index'),
+                    'active' => request()->routeIs('products.*'),
+                ],
+                [
+                    'label' => 'Transaksi POS',
+                    'icon' => 'point_of_sale',
+                    'href' => route('transactions.index'),
+                    'active' => request()->routeIs('transactions.*'),
+                ],
+            ]
         ];
     @endphp
 
@@ -82,19 +104,29 @@
                 </button>
             </div>
 
-            <nav class="flex-1 overflow-y-auto px-4 py-2">
-                <ul class="space-y-1">
-                    @foreach ($navItems as $item)
-                        <li>
-                            <a href="{{ $item['href'] }}"
-                                class="{{ $item['active'] ? 'border-primary bg-secondary-container text-on-secondary-container shadow-sm' : 'border-transparent text-on-surface-variant hover:bg-secondary-container hover:text-on-secondary-container' }} flex items-center gap-3 border-l-4 px-4 py-3 text-sm font-semibold transition-all active:scale-[0.99]">
-                                <span
-                                    class="material-symbols-outlined {{ $item['active'] ? 'icon-fill' : '' }}">{{ $item['icon'] }}</span>
-                                <span>{{ $item['label'] }}</span>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
+            <nav class="flex-1 overflow-y-auto px-4 py-2" x-data="{ openGroups: ['Koperasi', 'Stok & Kasir'] }">
+                @foreach ($navItems as $groupName => $items)
+                    <div class="mb-4" x-data="{ groupName: '{{ $groupName }}' }">
+                        <button @click="openGroups.includes(groupName) ? openGroups = openGroups.filter(g => g !== groupName) : openGroups.push(groupName)"
+                            class="flex w-full items-center justify-between px-4 text-xs font-bold uppercase tracking-wider text-outline mb-2 hover:text-on-surface transition">
+                            {{ $groupName }}
+                            <span class="material-symbols-outlined text-[16px] transition-transform" 
+                                  :class="openGroups.includes(groupName) ? 'rotate-180' : ''">expand_more</span>
+                        </button>
+                        <ul class="space-y-1" x-show="openGroups.includes(groupName)" x-cloak x-transition>
+                            @foreach ($items as $item)
+                                <li>
+                                    <a href="{{ $item['href'] }}"
+                                        class="{{ $item['active'] ? 'border-primary bg-secondary-container text-on-secondary-container shadow-sm' : 'border-transparent text-on-surface-variant hover:bg-secondary-container hover:text-on-secondary-container' }} flex items-center gap-3 border-l-4 px-4 py-3 text-sm font-semibold transition-all active:scale-[0.99]">
+                                        <span
+                                            class="material-symbols-outlined {{ $item['active'] ? 'icon-fill' : '' }}">{{ $item['icon'] }}</span>
+                                        <span>{{ $item['label'] }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endforeach
             </nav>
 
             <div class="border-t border-outline-variant px-4 py-4">
