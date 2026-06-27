@@ -71,12 +71,6 @@
         @error('transaction_date') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
-    <div>
-        <label for="reference_number" class="mb-2 block text-sm font-bold text-on-surface">Referensi</label>
-        <input id="reference_number" name="reference_number" value="{{ old('reference_number', $saving->reference_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
-        @error('reference_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
     <div class="md:col-span-2">
         <label for="notes" class="mb-2 block text-sm font-bold text-on-surface">Catatan</label>
         <textarea id="notes" name="notes" rows="4" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">{{ old('notes', $saving->notes) }}</textarea>

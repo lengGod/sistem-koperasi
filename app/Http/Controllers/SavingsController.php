@@ -42,8 +42,15 @@ class SavingsController extends Controller
             'amount' => ['required', 'numeric', 'min:1000'],
             'transaction_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'reference_number' => ['nullable', 'string', 'max:100', 'unique:savings,reference_number'],
         ]);
+
+        $member = Member::find($data['member_id']);
+        $type = SavingsType::find($data['savings_type_id']);
+        $date = \Illuminate\Support\Carbon::parse($data['transaction_date']);
+        
+        $data['reference_number'] = strtoupper($type->code) . '-' . 
+                                    $member->member_number . '-' . 
+                                    $date->format('Ym');
 
         $saving = $this->savings->create($data);
 
@@ -73,7 +80,6 @@ class SavingsController extends Controller
             'amount' => ['required', 'numeric', 'min:1000'],
             'transaction_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'reference_number' => ['nullable', 'string', 'max:100', Rule::unique('savings', 'reference_number')->ignore($saving)],
         ]);
 
         $this->savings->update($saving, $data);
