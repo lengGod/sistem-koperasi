@@ -5,18 +5,39 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Services\InventoryService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     use AuthorizesRequests;
+
+    protected $inventoryService;
+
+    public function __construct(InventoryService $inventoryService)
+    {
+        $this->inventoryService = $inventoryService;
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('view_stock');
-        $products = Product::all();
+        
+        $query = Product::with('category');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('sku', 'like', '%' . $search . '%');
+            });
+        }
+
+        $products = $query->latest()->get();
         return view('products.index', compact('products'));
     }
 
@@ -34,8 +55,22 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        Product::create($request->validated());
-        return redirect()->route('products.index')->with('success', 'Product created successfully.');
+        $validatedData = $request->validated();
+        $initialStock = (int)$validatedData['stock'];
+        $validatedData['stock'] = 0; // Set stock to 0 initially
+
+        $product = Product::create($validatedData);
+
+        if ($initialStock > 0) {
+            $this->inventoryService->adjustStock(
+                $product->id,
+                $initialStock,
+                'masuk',
+                'Stok awal saat pembuatan produk'
+            );
+        }
+
+        return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
     /**
@@ -44,6 +79,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $this->authorize('view_stock');
+        $product->load('category');
         return view('products.show', compact('product'));
     }
 
@@ -61,8 +97,27 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $product->update($request->validated());
-        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
+        $validatedData = $request->validated();
+        $newStock = (int)$validatedData['stock'];
+        unset($validatedData['stock']);
+
+        $oldStock = $product->stock;
+
+        $product->update($validatedData);
+
+        if ($oldStock !== $newStock) {
+            $change = $newStock - $oldStock;
+            $type = $change > 0 ? 'masuk' : 'keluar';
+
+            $this->inventoryService->adjustStock(
+                $product->id,
+                $change,
+                $type,
+                'Penyesuaian stok melalui edit produk'
+            );
+        }
+
+        return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui.');
     }
 
     /**
@@ -71,7 +126,13 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $this->authorize('manage_products');
+
+        // Check if the product has associated transaction items
+        if (\App\Models\TransactionItem::where('product_id', $product->id)->exists()) {
+            return redirect()->route('products.index')->with('error', 'Produk tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
+        }
+
         $product->delete();
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+        return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus.');
     }
 }

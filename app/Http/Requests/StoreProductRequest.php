@@ -26,8 +26,13 @@ class StoreProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['required', 'string', 'unique:products,sku', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],
+            'purchase_price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
+            'category_id' => ['required', 'exists:product_categories,id'],
+            'type' => ['required', 'string'],
+            'unit' => ['nullable', 'string', 'max:50'],
+            'location' => ['nullable', 'string', 'max:255'],
         ];
     }
     }

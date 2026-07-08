@@ -7,9 +7,12 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfitReportController;
 use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\SavingsTypeController;
+use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UserController;
 use App\Models\Installment;
 use App\Models\Loan;
 use App\Models\Member;
@@ -37,6 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::post('members/bulk-destroy', [MemberController::class, 'bulkDestroy'])->name('members.bulk-destroy');
     Route::resource('members', MemberController::class);
 
+    Route::resource('users', UserController::class);
+
     Route::post('savings-types/bulk-destroy', [SavingsTypeController::class, 'bulkDestroy'])->name('savings-types.bulk-destroy');
     Route::resource('savings-types', SavingsTypeController::class);
 
@@ -52,6 +57,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('product-categories', ProductCategoryController::class);
     Route::resource('transactions', TransactionController::class);
+    Route::post('transactions/{transaction}/reverse', [TransactionController::class, 'reverse'])->name('transactions.reverse');
+    Route::get('stock-histories', [StockHistoryController::class, 'index'])->name('stock-histories.index');
+    Route::get('reports/profit', [ProfitReportController::class, 'index'])->name('reports.profit');
+    Route::get('stock-histories', [StockHistoryController::class, 'index'])->name('stock-histories.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

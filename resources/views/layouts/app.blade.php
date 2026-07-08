@@ -17,7 +17,7 @@
 
 <body class="bg-surface text-on-surface antialiased">
     @php
-        $navItems = [
+        $allItems = [
             'Koperasi' => [
                 [
                     'label' => 'Dashboard',
@@ -73,10 +73,40 @@
                     'label' => 'Transaksi POS',
                     'icon' => 'point_of_sale',
                     'href' => route('transactions.index'),
-                    'active' => request()->routeIs('transactions.*'),
+                    'active' => request()->routeIs('transactions.index'),
                 ],
-            ]
+                [
+                    'label' => 'Riwayat Stok',
+                    'icon' => 'history',
+                    'href' => route('stock-histories.index'),
+                    'active' => request()->routeIs('stock-histories.*'),
+                ],
+            ],
+            'Laporan' => [
+                [
+                    'label' => 'Laporan Keuntungan',
+                    'icon' => 'trending_up',
+                    'href' => route('reports.profit'),
+                    'active' => request()->routeIs('reports.profit'),
+                ],
+            ],
         ];
+
+        if (Auth::user()->hasRole('admin')) {
+            $navItems = $allItems;
+        } else {
+            $navItems = [
+                'Stok & Kasir' => array_merge([
+                    [
+                        'label' => 'Dashboard Petugas',
+                        'icon' => 'dashboard',
+                        'href' => route('dashboard'),
+                        'active' => request()->routeIs('dashboard'),
+                    ],
+                ], $allItems['Stok & Kasir']),
+                'Laporan' => $allItems['Laporan'],
+            ];
+        }
     @endphp
 
     <div x-data="appShell" @open-confirm-modal.window="openConfirm($event.detail)"
@@ -104,14 +134,15 @@
                 </button>
             </div>
 
-            <nav class="flex-1 overflow-y-auto px-4 py-2" x-data="{ openGroups: ['Koperasi', 'Stok & Kasir'] }">
+            <nav class="flex-1 overflow-y-auto px-4 py-2" x-data="{ openGroups: ['Koperasi', 'Stok & Kasir', 'Laporan'] }">
                 @foreach ($navItems as $groupName => $items)
                     <div class="mb-4" x-data="{ groupName: '{{ $groupName }}' }">
-                        <button @click="openGroups.includes(groupName) ? openGroups = openGroups.filter(g => g !== groupName) : openGroups.push(groupName)"
+                        <button
+                            @click="openGroups.includes(groupName) ? openGroups = openGroups.filter(g => g !== groupName) : openGroups.push(groupName)"
                             class="flex w-full items-center justify-between px-4 text-xs font-bold uppercase tracking-wider text-outline mb-2 hover:text-on-surface transition">
                             {{ $groupName }}
-                            <span class="material-symbols-outlined text-[16px] transition-transform" 
-                                  :class="openGroups.includes(groupName) ? 'rotate-180' : ''">expand_more</span>
+                            <span class="material-symbols-outlined text-[16px] transition-transform"
+                                :class="openGroups.includes(groupName) ? 'rotate-180' : ''">expand_more</span>
                         </button>
                         <ul class="space-y-1" x-show="openGroups.includes(groupName)" x-cloak x-transition>
                             @foreach ($items as $item)
@@ -171,6 +202,25 @@
                 </div>
 
                 <div class="flex items-center gap-4">
+                    @if (Auth::user()->hasRole('admin'))
+                        <div class="relative" @click.outside="settingsOpen = false" x-data="{ settingsOpen: false }">
+                            <button @click="settingsOpen = !settingsOpen" type="button"
+                                class="flex items-center gap-2 rounded-full px-3 py-1 transition hover:bg-surface-container">
+                                <span class="text-sm font-bold text-on-surface-variant">{{ __('Pengaturan') }}</span>
+                                <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+                            </button>
+
+                            <div x-cloak x-show="settingsOpen" x-transition
+                                class="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg">
+                                <a href="{{ route('users.index') }}"
+                                    class="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-low">
+                                    <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+                                    {{ __('Manajemen Pengguna') }}
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="relative" @click.outside="profileOpen = false">
                         <button @click="profileOpen = !profileOpen" type="button"
                             class="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition hover:bg-surface-container">
@@ -191,8 +241,8 @@
                                 <span class="material-symbols-outlined text-[20px]">person</span>
                                 Profil
                             </a>
-                            <form action="{{ route('logout') }}" method="POST" class="border-t border-outline-variant"
-                                style="margin-top: 0.75rem;">
+                            <form action="{{ route('logout') }}" method="POST"
+                                class="border-t border-outline-variant" style="margin-top: 0.75rem;">
                                 @csrf
                                 <button type="submit"
                                     class="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-error transition hover:bg-error-container">

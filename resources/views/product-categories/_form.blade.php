@@ -12,12 +12,6 @@
     </div>
 
     <div>
-        <label for="slug" class="mb-2 block text-sm font-bold text-on-surface">Slug (URL Friendly)</label>
-        <input id="slug" name="slug" value="{{ old('slug', $category->slug) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-        @error('slug') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
         <label for="description" class="mb-2 block text-sm font-bold text-on-surface">Deskripsi</label>
         <textarea id="description" name="description" rows="3" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">{{ old('description', $category->description) }}</textarea>
         @error('description') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror

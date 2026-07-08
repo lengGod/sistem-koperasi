@@ -2,17 +2,17 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateProductRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return auth()->user()->can('manage_products');
+        return true;
     }
 
     /**
@@ -24,11 +24,9 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'unique:products,sku,' . $this->product->id, 'max:100'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'purchase_price' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
-            'description' => ['nullable', 'string'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->user)],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', Rule::in(['admin', 'petugas'])],
         ];
     }
-    }
+}

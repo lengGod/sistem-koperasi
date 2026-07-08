@@ -5,17 +5,32 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\Product;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class TransactionController extends Controller
 {
+    protected $inventoryService;
+
+    public function __construct(InventoryService $inventoryService)
+    {
+        $this->inventoryService = $inventoryService;
+    }
+
     public function index()
     {
         Gate::authorize('view_stock');
-        $transactions = Transaction::with('items.product')->latest()->get();
+        $transactions = Transaction::with('items.product')->latest()->paginate(20);
         return view('transactions.index', compact('transactions'));
+    }
+
+    public function create()
+    {
+        Gate::authorize('perform_transaction');
+        $products = Product::where('stock', '>', 0)->get();
+        return view('transactions.create', compact('products'));
     }
 
     public function store(Request $request)
@@ -28,9 +43,13 @@ class TransactionController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        return DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($validated) {
             $totalPrice = 0;
+            // Generate custom ID (e.g., TRX-20260629-XXXX)
+            $customId = 'TRX-' . now()->format('Ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
+
             $transaction = Transaction::create([
+                'custom_id' => $customId,
                 'user_id' => auth()->id(),
                 'total_price' => 0,
             ]);
@@ -38,11 +57,13 @@ class TransactionController extends Controller
             foreach ($validated['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for {$product->name}");
-                }
-
-                $product->decrement('stock', $item['quantity']);
+                // Menggunakan InventoryService untuk mengurangi stok dan mencatat riwayat
+                $this->inventoryService->adjustStock(
+                    $product->id,
+                    -$item['quantity'],
+                    'keluar',
+                    'Transaksi Penjualan #' . $customId
+                );
                 
                 $price = $product->price * $item['quantity'];
                 $totalPrice += $price;
@@ -55,8 +76,31 @@ class TransactionController extends Controller
             }
 
             $transaction->update(['total_price' => $totalPrice]);
-
-            return redirect()->route('transactions.index')->with('success', 'Transaction completed successfully.');
         });
+
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil diproses.');
+    }
+
+    public function reverse(Transaction $transaction)
+    {
+        Gate::authorize('perform_transaction');
+
+        DB::transaction(function () use ($transaction) {
+            foreach ($transaction->items as $item) {
+                // Kembalikan stok (inverse dari transaksi keluar)
+                $this->inventoryService->adjustStock(
+                    $item->product_id,
+                    $item->quantity,
+                    'penyesuaian',
+                    'Pembatalan Transaksi #' . $transaction->custom_id
+                );
+            }
+
+            // Hapus items lalu transaksi
+            $transaction->items()->delete();
+            $transaction->delete();
+        });
+
+        return redirect()->route('transactions.index')->with('status', 'Transaksi berhasil dibatalkan dan stok dikembalikan.');
     }
 }

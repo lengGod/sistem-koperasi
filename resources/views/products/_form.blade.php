@@ -38,9 +38,15 @@
     </div>
 
     <div>
-        <label for="price" class="mb-2 block text-sm font-bold text-on-surface">Harga</label>
-        <input id="price" name="price" type="number" step="0.01" value="{{ old('price', $product->price) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        <label for="price" class="mb-2 block text-sm font-bold text-on-surface">Harga Jual</label>
+        <input id="price" name="price" type="number" value="{{ old('price', (int)$product->price) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
         @error('price') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label for="purchase_price" class="mb-2 block text-sm font-bold text-on-surface">Harga Modal</label>
+        <input id="purchase_price" name="purchase_price" type="number" value="{{ old('purchase_price', (int)$product->purchase_price) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        @error('purchase_price') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
     <div>
@@ -49,8 +55,20 @@
         @error('stock') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
+    <div>
+        <label for="unit" class="mb-2 block text-sm font-bold text-on-surface">Satuan</label>
+        <input id="unit" name="unit" value="{{ old('unit', $product->unit) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+        @error('unit') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label for="location" class="mb-2 block text-sm font-bold text-on-surface">Lokasi Penyimpanan</label>
+        <input id="location" name="location" value="{{ old('location', $product->location) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+        @error('location') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+    </div>
+
     <div class="md:col-span-2">
-        <label for="description" class="mb-2 block text-sm font-bold text-on-surface">Deskripsi</label>
+        <label for="description" class="mb-2 block text-sm font-bold text-on-surface">Keterangan</label>
         <textarea id="description" name="description" rows="3" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">{{ old('description', $product->description) }}</textarea>
         @error('description') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>

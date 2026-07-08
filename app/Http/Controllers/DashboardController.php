@@ -13,6 +13,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        if (auth()->user()->hasRole('petugas')) {
+            return app(PetugasDashboardController::class)->index();
+        }
+
         $totalMembers = Member::count();
         $totalSavings = Savings::sum('amount');
         $latestSavingsDate = Savings::max('transaction_date');
