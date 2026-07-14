@@ -25,7 +25,7 @@ class StoreMemberRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'member_number' => ['required', 'string', 'max:50', 'unique:members,member_number'],
+            'member_number' => ['nullable', 'string', 'max:50'],
             'account_number' => ['nullable', 'string', 'max:32', Rule::unique('members', 'account_number')->whereNotNull('account_number')],
             'work_unit' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],

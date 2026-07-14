@@ -10,7 +10,7 @@ class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! app()->environment('local') && ! $request->isSecure()) {
+        if (! app()->environment('local', 'testing') && ! $request->isSecure()) {
             return redirect()->secure($request->getRequestUri(), 301);
         }
 
@@ -23,7 +23,7 @@ class SecurityHeaders
             'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(), payment=()',
         ];
 
-        if (! app()->environment('local')) {
+        if (! app()->environment('local', 'testing')) {
             $headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
         }
 

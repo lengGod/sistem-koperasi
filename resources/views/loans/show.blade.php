@@ -33,6 +33,12 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2">
+                    @if ($loan->member)
+                        <a href="{{ route('members.show', $loan->member) }}" class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
+                            <span class="material-symbols-outlined text-[20px]">person</span>
+                            Detail Anggota
+                        </a>
+                    @endif
                     <a href="{{ route('loans.edit', $loan) }}" class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
                         <span class="material-symbols-outlined icon-fill text-[20px]">edit</span>
                         Edit

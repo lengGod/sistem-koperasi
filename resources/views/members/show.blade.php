@@ -54,6 +54,22 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('savings.create', ['member_id' => $member->id]) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700">
+                        <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+                        Tambah Simpanan
+                    </a>
+                    <a href="{{ route('loans.create', ['member_id' => $member->id]) }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-amber-700">
+                        <span class="material-symbols-outlined text-[20px]">payments</span>
+                        Tambah Pinjaman
+                    </a>
+                    @if ($activeLoansCount > 0)
+                        @php $activeLoan = $loans->where('status', 'active')->first(); @endphp
+                        <a href="{{ route('installments.create', ['loan_id' => $activeLoan->id]) }}" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">
+                            <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+                            Bayar Angsuran
+                        </a>
+                    @endif
+
                     <a href="{{ route('members.edit', $member) }}" class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
                         <span class="material-symbols-outlined icon-fill text-[20px]">edit</span>
                         Edit

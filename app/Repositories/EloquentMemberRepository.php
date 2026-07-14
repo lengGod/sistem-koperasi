@@ -51,4 +51,19 @@ class EloquentMemberRepository implements MemberRepositoryInterface
             ->whereIn('id', $memberIds->all())
             ->delete();
     }
+
+    public function generateMemberNumber(): string
+    {
+        $latestMember = Member::query()
+            ->where('member_number', 'like', 'KOP-%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($latestMember) {
+            $number = (int) substr($latestMember->member_number, 4);
+            return 'KOP-' . str_pad((string) ($number + 1), 4, '0', STR_PAD_LEFT);
+        }
+
+        return 'KOP-0001';
+    }
 }

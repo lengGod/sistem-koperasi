@@ -20,6 +20,10 @@ class MemberService
 
     public function create(array $data): Member
     {
+        if (empty($data['member_number'])) {
+            $data['member_number'] = $this->members->generateMemberNumber();
+        }
+
         return $this->members->create($data);
     }
 

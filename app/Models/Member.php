@@ -12,6 +12,7 @@ class Member extends Model
 
     protected $fillable = [
         'member_number',
+        'account_number',
         'nik',
         'name',
         'gender',
@@ -42,5 +43,10 @@ class Member extends Model
     public function loans()
     {
         return $this->hasMany(Loan::class);
+    }
+
+    public function installments()
+    {
+        return $this->hasManyThrough(Installment::class, Loan::class);
     }
 }

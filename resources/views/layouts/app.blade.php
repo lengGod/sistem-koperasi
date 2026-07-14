@@ -84,6 +84,12 @@
             ],
             'Laporan' => [
                 [
+                    'label' => 'Laporan Koperasi',
+                    'icon' => 'description',
+                    'href' => route('reports.koperasi.index'),
+                    'active' => request()->routeIs('reports.koperasi.*'),
+                ],
+                [
                     'label' => 'Laporan Keuntungan',
                     'icon' => 'trending_up',
                     'href' => route('reports.profit'),
@@ -92,19 +98,24 @@
             ],
         ];
 
-        if (Auth::user()->hasRole('admin')) {
+        if (auth()->user()->hasRole('admin')) {
             $navItems = $allItems;
         } else {
             $navItems = [
-                'Stok & Kasir' => array_merge([
+                'Stok & Kasir' => array_merge(
                     [
-                        'label' => 'Dashboard Petugas',
-                        'icon' => 'dashboard',
-                        'href' => route('dashboard'),
-                        'active' => request()->routeIs('dashboard'),
+                        [
+                            'label' => 'Dashboard Petugas',
+                            'icon' => 'dashboard',
+                            'href' => route('dashboard'),
+                            'active' => request()->routeIs('dashboard'),
+                        ],
                     ],
-                ], $allItems['Stok & Kasir']),
-                'Laporan' => $allItems['Laporan'],
+                    $allItems['Stok & Kasir'],
+                ),
+                'Laporan' => array_filter($allItems['Laporan'], function ($item) {
+                    return $item['label'] === 'Laporan Keuntungan';
+                }),
             ];
         }
     @endphp
@@ -202,7 +213,7 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                    @if (Auth::user()->hasRole('admin'))
+                    @if (auth()->user()->hasRole('admin'))
                         <div class="relative" @click.outside="settingsOpen = false" x-data="{ settingsOpen: false }">
                             <button @click="settingsOpen = !settingsOpen" type="button"
                                 class="flex items-center gap-2 rounded-full px-3 py-1 transition hover:bg-surface-container">

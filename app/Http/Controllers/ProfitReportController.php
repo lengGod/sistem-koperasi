@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\KoperasiExport;
+use App\Models\Loan;
+use App\Models\Member;
+use App\Models\Savings;
+use App\Models\Installment;
 use App\Models\Product;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProfitReportController extends Controller
 {
@@ -44,5 +50,48 @@ class ProfitReportController extends Controller
         $products = $query->get();
 
         return view('reports.profit', compact('products', 'month'));
+    }
+
+    public function koperasi(Request $request)
+    {
+        $month = $request->input('month');
+
+        $query = [
+            'savings' => Savings::query(),
+            'loans' => Loan::query(),
+            'installments' => Installment::query(),
+        ];
+
+        if ($month) {
+            foreach ($query as $key => $q) {
+                // Assuming date columns are 'transaction_date', 'created_at', 'due_date'
+                $column = match($key) {
+                    'savings' => 'transaction_date',
+                    'loans' => 'created_at',
+                    'installments' => 'due_date',
+                };
+                $q->whereRaw("DATE_FORMAT($column, '%Y-%m') = ?", [$month]);
+            }
+        }
+
+        $data = [
+            'totalMembers' => Member::count(), // Members usually total count regardless of month filter in this context
+            'totalSavings' => $query['savings']->sum('amount'),
+            'totalLoans' => $query['loans']->sum('principal_amount'),
+            'totalInstallmentsPaid' => $query['installments']->where('status', 'paid')->sum('amount'),
+            'activeLoansBalance' => Loan::where('status', 'active')->sum('remaining_balance'),
+            'overdueInstallments' => Installment::where('status', 'late')->count(),
+            'month' => $month,
+        ];
+
+        return view('reports.koperasi', $data);
+    }
+
+    public function export(Request $request)
+    {
+        $month = $request->input('month');
+        $fileName = 'laporan-koperasi-' . ($month ?? 'semua') . '.xlsx';
+        
+        return Excel::download(new KoperasiExport($month), $fileName, \Maatwebsite\Excel\Excel::XLSX);
     }
 }

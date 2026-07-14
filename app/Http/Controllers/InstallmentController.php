@@ -52,10 +52,13 @@ class InstallmentController extends Controller
         return view('installments.index', compact('installments'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('installments.create', [
-            'installment' => new Installment(['status' => 'pending']),
+            'installment' => new Installment([
+                'status' => 'pending',
+                'loan_id' => $request->query('loan_id'),
+            ]),
             'loans' => Loan::query()->with('member')->orderByDesc('id')->get(),
         ]);
     }

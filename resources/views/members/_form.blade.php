@@ -12,6 +12,12 @@
     </div>
 
     <div>
+        <label for="member_number" class="mb-2 block text-sm font-bold text-on-surface">No Anggota</label>
+        <input id="member_number" name="member_number" value="{{ old('member_number', $member->member_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" placeholder="Otomatis jika dikosongkan" {{ $isEdit ? 'required' : '' }}>
+        @error('member_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
         <label for="account_number" class="mb-2 block text-sm font-bold text-on-surface">No Rekening</label>
         <input id="account_number" name="account_number" value="{{ old('account_number', $member->account_number) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
         @error('account_number') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
@@ -24,7 +30,13 @@
     </div>
 
     <div>
-        <label for="phone" class="mb-2 block text-sm font-bold text-on-surface">No Telp</label>
+        <label for="employment_status" class="mb-2 block text-sm font-bold text-on-surface">Status Pekerja</label>
+        <input id="employment_status" name="employment_status" value="{{ old('employment_status', $member->employment_status) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
+        @error('employment_status') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label for="phone" class="mb-2 block text-sm font-bold text-on-surface">No Telepon</label>
         <input id="phone" name="phone" value="{{ old('phone', $member->phone) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
         @error('phone') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
@@ -35,19 +47,13 @@
         @error('joined_at') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 
-    <div>
+    <div class="md:col-span-2">
         <label for="status" class="mb-2 block text-sm font-bold text-on-surface">Status Keanggotaan</label>
         <select id="status" name="status" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
             <option value="active" @selected(old('status', $member->status) === 'active')>Aktif</option>
             <option value="inactive" @selected(old('status', $member->status) === 'inactive')>Pasif</option>
         </select>
         @error('status') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label for="employment_status" class="mb-2 block text-sm font-bold text-on-surface">Status Pekerja</label>
-        <input id="employment_status" name="employment_status" value="{{ old('employment_status', $member->employment_status) }}" class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary" required>
-        @error('employment_status') <p class="mt-1 text-sm text-error">{{ $message }}</p> @enderror
     </div>
 </div>
 

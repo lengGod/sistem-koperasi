@@ -24,10 +24,13 @@ class SavingsController extends Controller
         return view('savings.index', compact('savings'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('savings.create', [
-            'saving' => new Savings(['transaction_date' => now()->toDateString()]),
+            'saving' => new Savings([
+                'transaction_date' => now()->toDateString(),
+                'member_id' => $request->query('member_id'),
+            ]),
             'members' => Member::query()->orderBy('name')->get(),
             'savingsTypes' => SavingsType::query()->where('is_active', true)->orderBy('name')->get(),
         ]);

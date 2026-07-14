@@ -21,7 +21,7 @@ class LoanController extends Controller
         return view('loans.index', compact('loans'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('loans.create', [
             'loan' => new Loan([
@@ -29,6 +29,7 @@ class LoanController extends Controller
                 'term_months' => 12,
                 'disbursed_at' => now()->toDateString(),
                 'status' => 'active',
+                'member_id' => $request->query('member_id'),
             ]),
             'members' => Member::query()->orderBy('name')->get(),
         ]);

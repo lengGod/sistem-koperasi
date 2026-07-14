@@ -17,4 +17,6 @@ interface MemberRepositoryInterface
     public function delete(Member $member): void;
 
     public function deleteMany(Collection $memberIds): int;
+
+    public function generateMemberNumber(): string;
 }
