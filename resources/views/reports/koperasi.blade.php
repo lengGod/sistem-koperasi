@@ -10,13 +10,14 @@
         </div>
         <div class="flex gap-2">
             <form action="{{ route('reports.koperasi.index') }}" method="GET" class="flex gap-2">
-                <input type="month" name="month" value="{{ $month }}" class="rounded-xl border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-primary text-sm">
+                <input type="month" name="start_month" value="{{ $start_month }}" class="rounded-xl border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-primary text-sm">
+                <input type="month" name="end_month" value="{{ $end_month }}" class="rounded-xl border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-primary text-sm">
                 <button type="submit" class="inline-flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-bold text-on-surface-variant hover:bg-surface-container-low transition">
                     Filter
                 </button>
             </form>
             <button type="button" 
-                    onclick="window.location.href='{{ route('reports.koperasi.export', ['month' => $month], false) }}'"
+                    onclick="window.location.href='{{ route('reports.koperasi.export', ['start_month' => $start_month, 'end_month' => $end_month], false) }}'"
                     class="inline-flex items-center gap-2 rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-on-primary shadow-sm transition hover:opacity-90">
                 <span class="material-symbols-outlined text-[20px]">download</span>
                 Export ke Excel

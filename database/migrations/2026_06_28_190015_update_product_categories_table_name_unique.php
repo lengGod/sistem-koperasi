@@ -11,13 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (config('database.default') === 'sqlite') {
-            return;
-        }
-
-        Schema::table('product_categories', function (Blueprint $table) {
-            $table->string('name')->unique()->change();
-        });
+        // Redundant migration, index already exists from initial migration.
     }
 
     /**

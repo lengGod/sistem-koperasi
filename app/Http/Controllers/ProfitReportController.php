@@ -20,26 +20,41 @@ class ProfitReportController extends Controller
     {
         Gate::authorize('view_stock');
 
-        $month = $request->input('month'); // Format YYYY-MM
+        $startMonth = $request->input('start_month');
+        $endMonth = $request->input('end_month');
         
         $query = Product::query();
 
-        if ($month) {
-            $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") <= ?', [$month]);
+        if ($startMonth || $endMonth) {
+            if ($startMonth && $endMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") BETWEEN ? AND ?', [$startMonth, $endMonth]);
+            } elseif ($startMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") >= ?', [$startMonth]);
+            } elseif ($endMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") <= ?', [$endMonth]);
+            }
         }
 
         // Total Terjual (items) berdasarkan periode
-        $query->withSum(['items as total_sold' => function ($query) use ($month) {
-            if ($month) {
-                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month]);
+        $query->withSum(['items as total_sold' => function ($query) use ($startMonth, $endMonth) {
+            if ($startMonth && $endMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") BETWEEN ? AND ?', [$startMonth, $endMonth]);
+            } elseif ($startMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") >= ?', [$startMonth]);
+            } elseif ($endMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") <= ?', [$endMonth]);
             }
         }], 'quantity');
 
         // Total Pembelian (stockHistories) berdasarkan periode
-        $query->withSum(['stockHistories as total_purchased' => function ($query) use ($month) {
+        $query->withSum(['stockHistories as total_purchased' => function ($query) use ($startMonth, $endMonth) {
             $query->where('type', 'masuk');
-            if ($month) {
-                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$month]);
+            if ($startMonth && $endMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") BETWEEN ? AND ?', [$startMonth, $endMonth]);
+            } elseif ($startMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") >= ?', [$startMonth]);
+            } elseif ($endMonth) {
+                $query->whereRaw('DATE_FORMAT(created_at, "%Y-%m") <= ?', [$endMonth]);
             }
         }], 'quantity_change');
 
@@ -49,49 +64,85 @@ class ProfitReportController extends Controller
 
         $products = $query->get();
 
-        return view('reports.profit', compact('products', 'month'));
+        return view('reports.profit', compact('products', 'startMonth', 'endMonth'));
     }
 
     public function koperasi(Request $request)
     {
-        $month = $request->input('month');
+        $startMonth = $request->input('start_month');
+        $endMonth = $request->input('end_month');
+
+        $membersQuery = Member::query();
+
+        if ($startMonth || $endMonth) {
+            $membersQuery->where(function ($q) use ($startMonth, $endMonth) {
+                $q->whereHas('savings', function ($sq) use ($startMonth, $endMonth) {
+                    $this->applyDateRange($sq, 'savings.transaction_date', $startMonth, $endMonth);
+                })
+                ->orWhereHas('loans', function ($lq) use ($startMonth, $endMonth) {
+                    $this->applyDateRange($lq, 'loans.created_at', $startMonth, $endMonth);
+                })
+                ->orWhereHas('installments', function ($iq) use ($startMonth, $endMonth) {
+                    $this->applyDateRange($iq, 'installments.due_date', $startMonth, $endMonth);
+                });
+            });
+        }
+
+        $members = $membersQuery->get();
+        $memberIds = $members->pluck('id');
 
         $query = [
-            'savings' => Savings::query(),
-            'loans' => Loan::query(),
-            'installments' => Installment::query(),
+            'savings' => Savings::query()->whereIn('member_id', $memberIds),
+            'loans' => Loan::query()->whereIn('member_id', $memberIds),
+            'installments' => Installment::query()->whereHas('loan', function($q) use ($memberIds) {
+                $q->whereIn('member_id', $memberIds);
+            }),
         ];
 
-        if ($month) {
+        if ($startMonth || $endMonth) {
             foreach ($query as $key => $q) {
-                // Assuming date columns are 'transaction_date', 'created_at', 'due_date'
                 $column = match($key) {
-                    'savings' => 'transaction_date',
-                    'loans' => 'created_at',
-                    'installments' => 'due_date',
+                    'savings' => 'savings.transaction_date',
+                    'loans' => 'loans.created_at',
+                    'installments' => 'installments.due_date',
                 };
-                $q->whereRaw("DATE_FORMAT($column, '%Y-%m') = ?", [$month]);
+                $this->applyDateRange($q, $column, $startMonth, $endMonth);
             }
         }
 
         $data = [
-            'totalMembers' => Member::count(), // Members usually total count regardless of month filter in this context
+            'totalMembers' => $members->count(),
             'totalSavings' => $query['savings']->sum('amount'),
             'totalLoans' => $query['loans']->sum('principal_amount'),
             'totalInstallmentsPaid' => $query['installments']->where('status', 'paid')->sum('amount'),
-            'activeLoansBalance' => Loan::where('status', 'active')->sum('remaining_balance'),
-            'overdueInstallments' => Installment::where('status', 'late')->count(),
-            'month' => $month,
+            'activeLoansBalance' => Loan::whereIn('member_id', $memberIds)->where('status', 'active')->sum('remaining_balance'),
+            'overdueInstallments' => Installment::whereHas('loan', function($q) use ($memberIds) {
+                $q->whereIn('member_id', $memberIds);
+            })->where('status', 'late')->count(),
+            'start_month' => $startMonth,
+            'end_month' => $endMonth,
         ];
 
         return view('reports.koperasi', $data);
     }
 
+    private function applyDateRange($query, $column, $start, $end)
+    {
+        if ($start && $end) {
+            $query->whereRaw("DATE_FORMAT($column, '%Y-%m') BETWEEN ? AND ?", [$start, $end]);
+        } elseif ($start) {
+            $query->whereRaw("DATE_FORMAT($column, '%Y-%m') >= ?", [$start]);
+        } elseif ($end) {
+            $query->whereRaw("DATE_FORMAT($column, '%Y-%m') <= ?", [$end]);
+        }
+    }
+
     public function export(Request $request)
     {
-        $month = $request->input('month');
-        $fileName = 'laporan-koperasi-' . ($month ?? 'semua') . '.xlsx';
+        $startMonth = $request->input('start_month');
+        $endMonth = $request->input('end_month');
+        $fileName = 'laporan-koperasi-' . ($startMonth ?? 'awal') . '-ke-' . ($endMonth ?? 'akhir') . '.xlsx';
         
-        return Excel::download(new KoperasiExport($month), $fileName, \Maatwebsite\Excel\Excel::XLSX);
+        return Excel::download(new KoperasiExport($startMonth, $endMonth), $fileName, \Maatwebsite\Excel\Excel::XLSX);
     }
 }

@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class InstallmentController extends Controller
 {
+    public function __construct(private readonly \App\Services\InstallmentService $installments) {}
+
     public function index(Request $request): View
     {
         $query = Installment::query()->with('loan.member');
@@ -80,7 +82,7 @@ class InstallmentController extends Controller
         $nextNumber = Installment::where('loan_id', $data['loan_id'])->count() + 1;
         $data['installment_number'] = $nextNumber;
 
-        $installment = Installment::create($data);
+        $installment = $this->installments->create($data);
 
         return redirect()->route('installments.show', $installment)->with('status', 'Angsuran berhasil ditambahkan.');
     }
@@ -114,14 +116,14 @@ class InstallmentController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $installment->update($data);
+        $this->installments->update($installment, $data);
 
         return redirect()->route('installments.show', $installment)->with('status', 'Angsuran berhasil diperbarui.');
     }
 
     public function destroy(Installment $installment): RedirectResponse
     {
-        $installment->delete();
+        $this->installments->delete($installment);
 
         return redirect()->route('installments.index')->with('status', 'Angsuran berhasil dihapus.');
     }
@@ -133,7 +135,7 @@ class InstallmentController extends Controller
             'installment_ids.*' => ['integer', 'distinct', 'exists:installments,id'],
         ]);
 
-        $deleted = Installment::whereIn('id', $validated['installment_ids'])->delete();
+        $deleted = $this->installments->deleteMany(collect($validated['installment_ids']));
 
         return redirect()
             ->route('installments.index')

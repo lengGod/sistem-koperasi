@@ -22,26 +22,59 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
 {
     use Exportable;
 
-    protected $month;
+    protected $startMonth;
+    protected $endMonth;
     protected $months;
     private $rowNumber = 0;
 
-    public function __construct($month)
+    public function __construct($startMonth, $endMonth)
     {
-        $this->month = $month;
-        $this->months = \App\Models\Savings::query()
+        $this->startMonth = $startMonth;
+        $this->endMonth = $endMonth;
+
+        $query = \App\Models\Savings::query()
             ->selectRaw('DATE_FORMAT(transaction_date, "%Y-%m") as month')
-            ->whereHas('savingsType', fn($q) => $q->where('code', 'WAJIB'))
-            ->distinct()
-            ->orderBy('month')
-            ->pluck('month');
+            ->whereHas('savingsType', fn($q) => $q->where('code', 'WAJIB'));
+            
+        if ($startMonth) $query->whereRaw('DATE_FORMAT(transaction_date, "%Y-%m") >= ?', [$startMonth]);
+        if ($endMonth) $query->whereRaw('DATE_FORMAT(transaction_date, "%Y-%m") <= ?', [$endMonth]);
+
+        $this->months = $query->distinct()->orderBy('month')->pluck('month');
     }
 
     public function collection()
     {
-        return Member::with(['savings.savingsType', 'loans', 'installments'])
-            ->orderBy('name', 'asc')
-            ->get();
+        $membersQuery = Member::query()
+            ->with(['savings.savingsType', 'loans', 'installments']);
+
+        if ($this->startMonth || $this->endMonth) {
+            $start = $this->startMonth;
+            $end = $this->endMonth;
+            $membersQuery->where(function ($q) use ($start, $end) {
+                $q->whereHas('savings', function ($sq) use ($start, $end) {
+                    $this->applyDateRange($sq, 'savings.transaction_date', $start, $end);
+                })
+                ->orWhereHas('loans', function ($lq) use ($start, $end) {
+                    $this->applyDateRange($lq, 'loans.created_at', $start, $end);
+                })
+                ->orWhereHas('installments', function ($iq) use ($start, $end) {
+                    $this->applyDateRange($iq, 'installments.due_date', $start, $end);
+                });
+            });
+        }
+
+        return $membersQuery->orderBy('name', 'asc')->get();
+    }
+
+    private function applyDateRange($query, $column, $start, $end)
+    {
+        if ($start && $end) {
+            $query->whereRaw("DATE_FORMAT($column, '%Y-%m') BETWEEN ? AND ?", [$start, $end]);
+        } elseif ($start) {
+            $query->whereRaw("DATE_FORMAT($column, '%Y-%m') >= ?", [$start]);
+        } elseif ($end) {
+            $query->whereRaw("DATE_FORMAT($column, '%Y-%m') <= ?", [$end]);
+        }
     }
 
     public function title(): string
@@ -65,6 +98,9 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
                 'Simpanan Pokok',
                 'SIMPANAN WAJIB',
                 ...array_fill(0, count($monthHeadings), ''),
+                'Total Seluruh Saldo',
+                'Pinjaman',
+                'Angsuran',
             ],
             [
                 '',
@@ -75,6 +111,9 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
                 '',
                 ...$monthHeadings,
                 'Total Simpanan Wajib',
+                '',
+                '',
+                '',
             ],
         ];
     }
@@ -88,6 +127,15 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
             'pending' => 'Menunggu Verifikasi',
         ];
 
+        // Apply range filter to map methods as well
+        $savings = $member->savings;
+        if ($this->startMonth) {
+            $savings = $savings->filter(fn($s) => \Carbon\Carbon::parse($s->transaction_date)->format('Y-m') >= $this->startMonth);
+        }
+        if ($this->endMonth) {
+            $savings = $savings->filter(fn($s) => \Carbon\Carbon::parse($s->transaction_date)->format('Y-m') <= $this->endMonth);
+        }
+
         return [
             $this->rowNumber,
             $member->name,
@@ -99,7 +147,10 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
                 ->whereHas('savingsType', fn($q) => $q->where('code', 'WAJIB'))
                 ->whereRaw('DATE_FORMAT(transaction_date, "%Y-%m") = ?', [$m])
                 ->sum('amount')),
-            $member->savings()->whereHas('savingsType', fn($q) => $q->where('code', 'WAJIB'))->sum('amount'),
+            $savings->filter(fn($s) => $s->savingsType && $s->savingsType->code === 'WAJIB')->sum('amount'),
+            $savings->sum(fn($saving) => $saving->transaction_type === 'withdrawal' ? -1 * (float) $saving->amount : (float) $saving->amount),
+            $member->loans->sum('principal_amount'),
+            $member->installments->where('status', 'paid')->sum('amount'),
         ];
     }
 
@@ -109,7 +160,7 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
             'C' => NumberFormat::FORMAT_TEXT,
         ];
 
-        $totalColumns = 6 + count($this->months) + 1;
+        $totalColumns = 6 + count($this->months) + 4;
 
         for ($i = 6; $i <= $totalColumns; $i++) {
             $columnLetter = Coordinate::stringFromColumnIndex($i);
@@ -132,7 +183,8 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
 
                 // Merge judul mulai dari A2 untuk menengahkan judul
                 $sheet->mergeCells('A2:' . $highestColumn . '2');
-                $sheet->setCellValue('A2', 'LAPORAN REKAP KOPERASI ' . strtoupper($this->month ?? 'SEMUA WAKTU'));
+                $period = ($this->startMonth ?? 'Awal') . ' s/d ' . ($this->endMonth ?? 'Akhir');
+                $sheet->setCellValue('A2', 'LAPORAN REKAP KOPERASI SIGER ' . strtoupper($period));
                 $sheet->getStyle('A2')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 20, 'color' => ['rgb' => '0056b3']],
                     'alignment' => [
@@ -141,9 +193,10 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
                     ],
                 ]);
                 $sheet->getRowDimension(2)->setRowHeight(50);
+                // ... (rest of the events remain similar)
 
                 $firstSavingsColumn = Coordinate::stringFromColumnIndex(7);
-                $lastSavingsColumn = $highestColumn;
+                $lastSavingsColumn = Coordinate::stringFromColumnIndex(7 + count($this->months));
 
                 foreach (range(1, 6) as $columnIndex) {
                     $columnLetter = Coordinate::stringFromColumnIndex($columnIndex);
@@ -152,6 +205,11 @@ class KoperasiExport implements FromCollection, WithHeadings, WithMapping, WithT
 
                 if ($firstSavingsColumn !== $lastSavingsColumn) {
                     $sheet->mergeCells($firstSavingsColumn . '4:' . $lastSavingsColumn . '4');
+                }
+
+                for ($columnIndex = 8 + count($this->months); $columnIndex <= Coordinate::columnIndexFromString($highestColumn); $columnIndex++) {
+                    $columnLetter = Coordinate::stringFromColumnIndex($columnIndex);
+                    $sheet->mergeCells($columnLetter . '4:' . $columnLetter . '5');
                 }
 
                 $headerRange = 'A4:' . $highestColumn . '5';

@@ -17,8 +17,13 @@
                     class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
             <div>
-                <label for="month" class="mb-2 block text-sm font-bold text-on-surface">Bulan</label>
-                <input id="month" name="month" type="month" value="{{ request('month') }}"
+                <label for="start_month" class="mb-2 block text-sm font-bold text-on-surface">Dari Bulan</label>
+                <input id="start_month" name="start_month" type="month" value="{{ request('start_month') }}"
+                    class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
+            </div>
+            <div>
+                <label for="end_month" class="mb-2 block text-sm font-bold text-on-surface">Sampai Bulan</label>
+                <input id="end_month" name="end_month" type="month" value="{{ request('end_month') }}"
                     class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
             <div class="flex items-end">
