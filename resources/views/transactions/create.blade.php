@@ -32,8 +32,13 @@
             <div class="lg:col-span-1">
                 <div class="dashboard-card rounded-3xl bg-surface-container-lowest p-6 sticky top-20">
                     <h3 class="text-lg font-bold text-on-surface mb-4">Keranjang</h3>
-                    <form action="{{ route('transactions.store') }}" method="POST">
-                        @csrf
+                    <form action="{{ route('transactions.store') }}" method="POST"
+                            x-data
+                            data-confirm="Apakah Anda yakin ingin memproses transaksi ini?"
+                            data-confirm-title="Proses Transaksi"
+                            data-confirm-button="Ya, Proses"
+                            data-confirm-tone="primary">
+                            @csrf
                         <div class="space-y-4 mb-6">
                             <template x-for="(item, index) in cart" :key="item.id">
                                 <div class="flex items-center justify-between gap-2">

@@ -321,7 +321,7 @@
 
     <!-- Toast Notification -->
     @php
-        $toastMessage = session('error') ?? session('status');
+        $toastMessage = session('error') ?? session('success') ?? session('status');
         $toastTone = session('error') ? 'error' : 'success';
     @endphp
     @if ($toastMessage)
