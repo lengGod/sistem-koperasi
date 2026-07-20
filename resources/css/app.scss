@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+// Import Font Inter
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/inter/800.css";
+
+// Import Material Symbols
+@import "material-symbols/outlined.css";
+
 @layer base {
     body {
         background: #f4f5f7;
