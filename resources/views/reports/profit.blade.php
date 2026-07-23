@@ -26,8 +26,9 @@
                 <input id="end_month" name="end_month" type="month" value="{{ request('end_month') }}"
                     class="w-full rounded-xl border-outline-variant bg-surface-container-lowest text-sm focus:border-primary focus:ring-primary">
             </div>
-            <div class="flex items-end">
+            <div class="flex items-end gap-2">
                 <button type="submit" class="w-full rounded-xl bg-primary-container px-4 py-2.5 text-sm font-bold text-on-primary">Filter Laporan</button>
+                <a href="{{ route('reports.profit.export', request()->query()) }}" data-turbo="false" class="w-full rounded-xl bg-secondary-container px-4 py-2.5 text-sm font-bold text-on-secondary-container text-center">Export</a>
             </div>
         </div>
     </form>

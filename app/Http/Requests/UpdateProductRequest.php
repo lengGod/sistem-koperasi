@@ -24,10 +24,14 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'unique:products,sku,' . $this->product->id, 'max:100'],
+            'sku' => ['required', 'string', 'unique:products,sku,' . $this->route('product')->id, 'max:100'],
+            'category_id' => ['nullable', 'exists:product_categories,id'],
+            'type' => ['required', 'in:general,koperasi'],
             'price' => ['required', 'numeric', 'min:0'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
+            'unit' => ['nullable', 'string', 'max:50'],
+            'location' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
         ];
     }

@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::post('transactions/{transaction}/reverse', [TransactionController::class, 'reverse'])->name('transactions.reverse');
     Route::get('stock-histories', [StockHistoryController::class, 'index'])->name('stock-histories.index');
     Route::get('reports/profit', [ProfitReportController::class, 'index'])->name('reports.profit');
+    Route::get('reports/profit/export', [ProfitReportController::class, 'exportProfit'])->name('reports.profit.export');
     Route::get('reports/koperasi', [ProfitReportController::class, 'koperasi'])->name('reports.koperasi.index');
     Route::get('reports/koperasi/export', [ProfitReportController::class, 'export'])->name('reports.koperasi.export');
     Route::get('stock-histories', [StockHistoryController::class, 'index'])->name('stock-histories.index');

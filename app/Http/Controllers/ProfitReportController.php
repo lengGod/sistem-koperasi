@@ -145,4 +145,14 @@ class ProfitReportController extends Controller
         
         return Excel::download(new KoperasiExport($startMonth, $endMonth), $fileName, \Maatwebsite\Excel\Excel::XLSX);
     }
+
+    public function exportProfit(Request $request)
+    {
+        $startMonth = $request->input('start_month');
+        $endMonth = $request->input('end_month');
+        $search = $request->input('search');
+        $fileName = 'laporan-keuntungan-' . ($startMonth ?? 'awal') . '-ke-' . ($endMonth ?? 'akhir') . '.xlsx';
+        
+        return Excel::download(new \App\Exports\ProfitExport($startMonth, $endMonth, $search), $fileName, \Maatwebsite\Excel\Excel::XLSX);
+    }
 }
