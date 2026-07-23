@@ -33,34 +33,61 @@
         </div>
     </form>
 
-    <div class="dashboard-card overflow-hidden rounded-3xl bg-surface-container-lowest" x-data>
+    <div class="dashboard-card overflow-hidden rounded-3xl bg-surface-container-lowest" x-data="{ selected: [] }">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+            <h2 class="font-bold text-on-surface">Daftar Barang</h2>
+            <form action="{{ route('products.bulk-destroy') }}" method="POST"
+                x-show="selected.length > 0"
+                x-transition
+                data-confirm="Anda yakin ingin menghapus barang-barang yang dipilih? Tindakan ini tidak dapat dibatalkan."
+                data-confirm-title="Hapus barang masal" data-confirm-button="Ya, hapus"
+                data-confirm-tone="danger">
+                @csrf
+                <template x-for="id in selected" :key="id">
+                    <input type="hidden" name="product_ids[]" :value="id">
+                </template>
+                <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-error-container px-4 py-2 text-sm font-bold text-on-error-container transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    :disabled="selected.length === 0">
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                    Hapus Terpilih
+                </button>
+            </form>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full min-w-[900px] text-left text-sm">
                 <thead
                     class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
-                        <tr>
-                            <th class="px-6 py-4">Kode Barang</th>
-                            <th class="px-6 py-4">Nama Barang</th>
-                            <th class="px-6 py-4">Kategori</th>
-                            <th class="px-6 py-4 text-right">Harga</th>
-                            <th class="px-6 py-4 text-center">Stok</th>
-                            <th class="px-6 py-4 text-right">Aksi</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-outline-variant">
-                        @forelse ($products as $product)
-                            <tr class="transition hover:bg-surface-container">
-                                <td class="px-6 py-4 font-mono text-xs text-on-surface-variant">{{ $product->sku }}</td>
-                                <td class="px-6 py-4 font-bold text-on-surface">{{ $product->name }}</td>
-                                <td class="px-6 py-4 text-on-surface-variant">{{ $product->category->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-right font-bold text-on-surface">
-                                    Rp {{ number_format($product->price, 0, ',', '.') }}
-                                </td>
-                                <td class="px-6 py-4 text-center font-bold {{ $product->stock < 10 ? 'text-error' : 'text-on-surface' }}">
-                                    {{ $product->stock }}
-                                </td>
-                                <td class="px-6 py-4 text-right">
+                        <th class="px-6 py-4 w-10 text-center">
+                            <input type="checkbox" @change="selected = $event.target.checked ? {{ $products->pluck('id') }} : []"
+                                class="rounded border-outline text-primary focus:ring-primary">
+                        </th>
+                        <th class="px-6 py-4">Kode Barang</th>
+                        <th class="px-6 py-4">Nama Barang</th>
+                        <th class="px-6 py-4">Kategori</th>
+                        <th class="px-6 py-4 text-right">Harga</th>
+                        <th class="px-6 py-4 text-center">Stok</th>
+                        <th class="px-6 py-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant">
+                    @forelse ($products as $product)
+                        <tr class="transition hover:bg-surface-container">
+                            <td class="px-6 py-4 text-center">
+                                <input type="checkbox" value="{{ $product->id }}" x-model="selected"
+                                    class="rounded border-outline text-primary focus:ring-primary">
+                            </td>
+                            <td class="px-6 py-4 font-mono text-xs text-on-surface-variant">{{ $product->sku }}</td>
+                            <td class="px-6 py-4 font-bold text-on-surface">{{ $product->name }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ $product->category->name ?? '-' }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-on-surface">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 text-center font-bold {{ $product->stock < 10 ? 'text-error' : 'text-on-surface' }}">
+                                {{ $product->stock }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('products.show', $product) }}"
                                         class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-low">
@@ -70,7 +97,7 @@
                                         class="rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-primary transition hover:bg-primary-fixed">
                                         Edit
                                     </a>
-                                    <form action="{{ route('products.destroy', $product) }}" method="POST" x-data
+                                    <form action="{{ route('products.destroy', $product) }}" method="POST"
                                         data-confirm="Anda yakin ingin menghapus barang {{ $product->name }}? Tindakan ini tidak dapat dibatalkan."
                                         data-confirm-title="Hapus barang" data-confirm-button="Ya, hapus"
                                         data-confirm-tone="danger">
@@ -85,7 +112,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-sm text-outline">
+                            <td colspan="7" class="px-6 py-10 text-center text-sm text-outline">
                                 Belum ada data barang.
                             </td>
                         </tr>

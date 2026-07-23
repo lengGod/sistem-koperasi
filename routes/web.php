@@ -54,10 +54,13 @@ Route::middleware('auth')->group(function () {
     Route::post('installments/bulk-destroy', [InstallmentController::class, 'bulkDestroy'])->name('installments.bulk-destroy');
     Route::resource('installments', InstallmentController::class);
 
+    Route::post('products/bulk-destroy', [ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     Route::resource('products', ProductController::class);
+    Route::post('product-categories/bulk-destroy', [ProductCategoryController::class, 'bulkDestroy'])->name('product-categories.bulk-destroy');
     Route::resource('product-categories', ProductCategoryController::class);
     Route::resource('transactions', TransactionController::class);
     Route::post('transactions/{transaction}/reverse', [TransactionController::class, 'reverse'])->name('transactions.reverse');
+    Route::post('transactions/bulk-reverse', [TransactionController::class, 'bulkReverse'])->name('transactions.bulk-reverse');
     Route::get('stock-histories', [StockHistoryController::class, 'index'])->name('stock-histories.index');
     Route::get('reports/profit', [ProfitReportController::class, 'index'])->name('reports.profit');
     Route::get('reports/profit/export', [ProfitReportController::class, 'exportProfit'])->name('reports.profit.export');

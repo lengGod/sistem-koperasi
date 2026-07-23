@@ -135,4 +135,25 @@ class ProductController extends Controller
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus.');
     }
+
+    public function bulkDestroy(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $this->authorize('manage_products');
+
+        $validated = $request->validate([
+            'product_ids' => ['required', 'array', 'min:1'],
+            'product_ids.*' => ['integer', 'distinct', 'exists:products,id'],
+        ]);
+
+        $ids = $validated['product_ids'];
+
+        // Check for transaction items
+        if (\App\Models\TransactionItem::whereIn('product_id', $ids)->exists()) {
+            return redirect()->route('products.index')->with('error', 'Beberapa produk tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
+        }
+
+        Product::whereIn('id', $ids)->delete();
+
+        return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus.');
+    }
 }

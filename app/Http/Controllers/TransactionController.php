@@ -103,4 +103,38 @@ class TransactionController extends Controller
 
         return redirect()->route('transactions.index')->with('status', 'Transaksi berhasil dibatalkan dan stok dikembalikan.');
     }
+
+    public function bulkReverse(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        Gate::authorize('perform_transaction');
+
+        $validated = $request->validate([
+            'transaction_ids' => ['required', 'array', 'min:1'],
+            'transaction_ids.*' => ['integer', 'distinct', 'exists:transactions,id'],
+        ]);
+
+        $ids = $validated['transaction_ids'];
+
+        DB::transaction(function () use ($ids) {
+            $transactions = Transaction::whereIn('id', $ids)->with('items')->get();
+
+            foreach ($transactions as $transaction) {
+                foreach ($transaction->items as $item) {
+                    // Kembalikan stok (inverse dari transaksi keluar)
+                    $this->inventoryService->adjustStock(
+                        $item->product_id,
+                        $item->quantity,
+                        'penyesuaian',
+                        'Pembatalan Transaksi #' . $transaction->custom_id
+                    );
+                }
+
+                // Hapus items lalu transaksi
+                $transaction->items()->delete();
+                $transaction->delete();
+            }
+        });
+
+        return redirect()->route('transactions.index')->with('status', 'Transaksi yang dipilih berhasil dibatalkan dan stok dikembalikan.');
+    }
 }

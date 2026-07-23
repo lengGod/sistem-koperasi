@@ -17,11 +17,35 @@
         </a>
     </section>
 
-    <div class="dashboard-card overflow-hidden rounded-3xl bg-surface-container-lowest">
+    <div class="dashboard-card overflow-hidden rounded-3xl bg-surface-container-lowest" x-data="{ selected: [] }">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+            <h2 class="font-bold text-on-surface">Riwayat Transaksi</h2>
+            <form action="{{ route('transactions.bulk-reverse') }}" method="POST"
+                x-show="selected.length > 0"
+                x-transition
+                data-confirm="Apakah Anda yakin ingin membatalkan transaksi-transaksi yang dipilih? Stok akan dikembalikan."
+                data-confirm-title="Batalkan Transaksi" data-confirm-button="Ya, Batalkan"
+                data-confirm-tone="danger">
+                @csrf
+                <template x-for="id in selected" :key="id">
+                    <input type="hidden" name="transaction_ids[]" :value="id">
+                </template>
+                <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-error-container px-4 py-2 text-sm font-bold text-on-error-container transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    :disabled="selected.length === 0">
+                    <span class="material-symbols-outlined text-[20px]">cancel</span>
+                    Batalkan Terpilih
+                </button>
+            </form>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full min-w-[800px] text-left text-sm">
                 <thead class="bg-surface-container-low text-xs font-extrabold uppercase tracking-[0.08em] text-on-surface-variant">
                     <tr>
+                        <th class="px-6 py-4 w-10 text-center">
+                            <input type="checkbox" @change="selected = $event.target.checked ? {{ $transactions->pluck('id') }} : []"
+                                class="rounded border-outline text-primary focus:ring-primary">
+                        </th>
                         <th class="px-6 py-4">ID Transaksi</th>
                         <th class="px-6 py-4">Tanggal</th>
                         <th class="px-6 py-4">Item</th>
@@ -32,6 +56,10 @@
                 <tbody class="divide-y divide-outline-variant">
                     @forelse ($transactions as $transaction)
                         <tr class="transition hover:bg-surface-container">
+                            <td class="px-6 py-4 text-center">
+                                <input type="checkbox" value="{{ $transaction->id }}" x-model="selected"
+                                    class="rounded border-outline text-primary focus:ring-primary">
+                            </td>
                             <td class="px-6 py-4 font-bold text-primary">{{ $transaction->custom_id }}</td>
                             <td class="px-6 py-4 text-on-surface-variant">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
                             <td class="px-6 py-4">
@@ -46,7 +74,6 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <form action="{{ route('transactions.reverse', $transaction->id) }}" method="POST" 
-                                    x-data
                                     data-confirm="Apakah Anda yakin ingin membatalkan transaksi ini? Stok akan dikembalikan."
                                     data-confirm-title="Batalkan Transaksi"
                                     data-confirm-button="Ya, Batalkan"
@@ -60,7 +87,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-sm text-outline">
+                            <td colspan="6" class="px-6 py-10 text-center text-sm text-outline">
                                 Belum ada transaksi.
                             </td>
                         </tr>

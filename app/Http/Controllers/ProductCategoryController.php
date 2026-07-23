@@ -66,4 +66,18 @@ class ProductCategoryController extends Controller
         $productCategory->delete();
         return redirect()->route('product-categories.index')->with('success', 'Kategori berhasil dihapus.');
     }
+
+    public function bulkDestroy(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        Gate::authorize('manage_products');
+
+        $validated = $request->validate([
+            'category_ids' => ['required', 'array', 'min:1'],
+            'category_ids.*' => ['integer', 'distinct', 'exists:product_categories,id'],
+        ]);
+
+        ProductCategory::whereIn('id', $validated['category_ids'])->delete();
+
+        return redirect()->route('product-categories.index')->with('success', 'Kategori terpilih berhasil dihapus.');
+    }
 }
