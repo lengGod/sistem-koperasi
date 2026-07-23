@@ -13,6 +13,8 @@ use App\Http\Controllers\SavingsTypeController;
 use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VehicleTypeController;
+use App\Http\Controllers\ParkingTransactionController;
 use App\Models\Installment;
 use App\Models\Loan;
 use App\Models\Member;
@@ -61,6 +63,7 @@ Route::middleware('auth')->group(function () {
     
     // Parking Module
     Route::resource('parking-types', VehicleTypeController::class);
+    Route::post('parking-transactions/bulk-destroy', [ParkingTransactionController::class, 'bulkDestroy'])->name('parking-transactions.bulk-destroy');
     Route::resource('parking-transactions', ParkingTransactionController::class);
 
     Route::resource('transactions', TransactionController::class);

@@ -56,6 +56,20 @@
                     'active' => request()->routeIs('installments.*'),
                 ],
             ],
+            'Parkir' => [
+                [
+                    'label' => 'Jenis Kendaraan',
+                    'icon' => 'directions_car',
+                    'href' => route('parking-types.index'),
+                    'active' => request()->routeIs('parking-types.*'),
+                ],
+                [
+                    'label' => 'Transaksi Parkir',
+                    'icon' => 'local_parking',
+                    'href' => route('parking-transactions.index'),
+                    'active' => request()->routeIs('parking-transactions.*'),
+                ],
+            ],
             'Stok & Kasir' => [
                 [
                     'label' => 'Kategori Barang',
@@ -145,7 +159,7 @@
                 </button>
             </div>
 
-            <nav class="flex-1 overflow-y-auto px-4 py-2" x-data="{ openGroups: ['Koperasi', 'Stok & Kasir', 'Laporan'] }">
+            <nav class="flex-1 overflow-y-auto px-4 py-2" x-data="{ openGroups: ['Koperasi', 'Parkir', 'Stok & Kasir', 'Laporan'] }">
                 @foreach ($navItems as $groupName => $items)
                     <div class="mb-4" x-data="{ groupName: '{{ $groupName }}' }">
                         <button
