@@ -58,6 +58,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class);
     Route::post('product-categories/bulk-destroy', [ProductCategoryController::class, 'bulkDestroy'])->name('product-categories.bulk-destroy');
     Route::resource('product-categories', ProductCategoryController::class);
+    
+    // Parking Module
+    Route::resource('parking-types', VehicleTypeController::class);
+    Route::resource('parking-transactions', ParkingTransactionController::class);
+
     Route::resource('transactions', TransactionController::class);
     Route::post('transactions/{transaction}/reverse', [TransactionController::class, 'reverse'])->name('transactions.reverse');
     Route::post('transactions/bulk-reverse', [TransactionController::class, 'bulkReverse'])->name('transactions.bulk-reverse');
